@@ -2106,8 +2106,9 @@ const CFG = {
   RETRY_READY: 0.85,         // 落下からリトライ可能まで [s]（要件：1.2 秒以内）
   FAIL_AT: 0.45,             // 落下から「コースアウト」確定まで [s]
   AUTO_RETRY: 2.4,           // 何もしなければ自動でやり直す [s]
-  GYRO_FULL_DEG: 18,         // この角度傾けると最大
+  GYRO_FULL_DEG: 12,         // この角度傾けると最大（18 → 12：感度 1.5 倍）
   GYRO_DEAD_DEG: 1.0,
+  GYRO_ROLL_GAIN_MAX: 1.33,  // 左右の目減りの補正（1/cos(構えた角度)）の上限。片側を下げる回し方で効きすぎないように
   DECK_Y: 0.021,             // 盤面プレートの上面
 };
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -4593,7 +4594,7 @@ const Gyro = {
   needsPermission: typeof window.DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function',
   permitted: null, listening: false, active: false, calibrated: false,
   alpha: null, beta: null, gamma: null, u: [0, 0, 1], u0: null, pitch0: 0, roll0: 0, count: 0, lastEvent: -1, calibAngle: 0,
-  ix: 0, iz: 0, rawX: 0, rawZ: 0, sens: 1, status: '',
+  ix: 0, iz: 0, rawX: 0, rawZ: 0, sens: 1, status: '', rollGain: 1,
   // プレイ開始のタップの中で呼ぶ（iOS の許可ダイアログはユーザー操作の中でしか出せない）
   request() {
     if (!this.supported) { this.permitted = false; this.status = 'unsupported'; return Promise.resolve(false); }
@@ -4650,6 +4651,10 @@ const Gyro = {
     if (!this.active) return false;
     this.u0 = this.u.slice();
     const a = this.angles(this.u0); this.pitch0 = a.pitch; this.roll0 = a.roll; this.calibAngle = this.angle();
+    // 左右の傾きは「画面の横の軸が水平からどれだけ下がったか」で読むので、スマホを立てて構えるほど
+    // 画面の縦の軸（下辺→上辺）まわりに回した量が cos(構えた角度) 倍に縮む（45° で 0.71 倍、60° で 0.5 倍）。その分を戻す（上限あり）
+    const sy = this.axes().sy, uy = this.u0[0] * sy[0] + this.u0[1] * sy[1];
+    this.rollGain = clamp(1 / Math.max(0.01, Math.sqrt(Math.max(0, 1 - uy * uy))), 1, CFG.GYRO_ROLL_GAIN_MAX);
     this.calibrated = true; this.ix = this.iz = 0;
     return true;
   },
@@ -4658,7 +4663,7 @@ const Gyro = {
     if (!this.active || !this.calibrated) return null;
     const a = this.angles(this.u);
     let dP = a.pitch - this.pitch0; dP = Math.atan2(Math.sin(dP), Math.cos(dP));
-    const dR = this.roll0 - a.roll;
+    const dR = (this.roll0 - a.roll) * this.rollGain;
     const full = CFG.GYRO_FULL_DEG / this.sens * Math.PI / 180, dead = CFG.GYRO_DEAD_DEG * Math.PI / 180;
     const shape = v => { const s = Math.sign(v), m = Math.max(0, Math.abs(v) - dead) / (full - dead); return s * Math.min(1, m); };
     this.rawX = shape(dR); this.rawZ = shape(dP);
