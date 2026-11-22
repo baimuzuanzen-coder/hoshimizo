@@ -158,8 +158,9 @@ body.titleopen #hud > *{pointer-events:none}
       <button class="primary" id="bPlay">プレイする</button>
       <button id="bWatch">お手本を見る</button>
       <button class="icon" id="bMute2" title="音"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
+      <button id="bGyro" title="スマホの傾きで操作する（ジャイロ）のON／OFF" aria-pressed="true">ジャイロ ON</button>
     </div>
-    <div class="note"><b>スマホ</b>：プレイ開始で傾きセンサーの許可を求めます。開始時の持ち方が水平になり、そこから前後左右に傾けて操作します（横持ちも可）。<br><b>PC</b>：矢印キー／WASDで傾ける・ドラッグで視点・R でやり直し・C で球を追う・M で消音。</div>
+    <div class="note"><b>スマホ</b>：プレイ開始で傾きセンサーの許可を求めます。開始時の持ち方が水平になり、そこから前後左右に傾けて操作します（横持ちも可）。「ジャイロ OFF」にすると許可は求めず、右下のスティックで操作します。<br><b>PC</b>：矢印キー／WASDで傾ける・ドラッグで視点・R でやり直し・C で球を追う・M で消音。</div>
   </div>
 </div>
 
@@ -2109,6 +2110,11 @@ const CFG = {
   GYRO_FULL_DEG: 12,         // この角度傾けると最大（18 → 12：感度 1.5 倍）
   GYRO_DEAD_DEG: 1.0,
   GYRO_ROLL_GAIN_MAX: 1.33,  // 左右の目減りの補正（1/cos(構えた角度)）の上限。片側を下げる回し方で効きすぎないように
+  // 縁の猶予（proto5）：ジャイロのときだけ・開口部だけ。今までの落ちる線（溝の縁 +0.02）を少し越えても、ゆっくりなら落とさない
+  EDGE_GRACE_W: 0.43,        // 猶予の幅（落ちる線から外へ。玉の直径分（0.43））。これを越えたら落ちる（0 で猶予なし＝proto3 と同じ）
+  EDGE_GRACE_V: 0.6,         // 外へ出る速さがこれより速ければ、今までどおりその場で落ちる [単位/s]
+  EDGE_GRACE_K: 24,           // 猶予の中で、外へ向かう動きを弱める強さ [1/s]（押し戻しはしない。外へ傾け続ければ落ちる）
+  EDGE_GRACE_STOP: 0.03,     // 猶予の中のまま開口部が終わったとき、外へ向かう速さがこれ以下（止まっている・戻りかけ）ならレールの線へ戻す。超えていれば落ちる [単位/s]
   DECK_Y: 0.021,             // 盤面プレートの上面
 };
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -3905,7 +3911,7 @@ const G = {
   input: { src: 'none', x: 0, z: 0 },        // 盤ローカルの入力 -1..1（x: 右へ転がす、z: 手前へ転がす）
   apiTilt: null,
   lastFall: null, fallAt: -1, failAt: -1, retryAt: -1, autoRetryAt: -1, clearAt: -1, failReason: '',
-  railHits: 0, jumps: { tries: 0, ok: 0, fail: 0, log: [] }, shClock: 0, demoJit: null, slow: 0, events: [],
+  railHits: 0, graceCatches: 0, jumps: { tries: 0, ok: 0, fail: 0, log: [] }, shClock: 0, demoJit: null, slow: 0, events: [],
 };
 const v3 = { dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2] };
 const GL = [0, 0, 0];
@@ -4206,13 +4212,21 @@ function stepGround(dt) {
   const umax = FR.half - RAIL_CLEAR, side = u >= 0 ? 1 : -1;
   const open = C.isOpening(b.s, side);
   b.onOpening = open && Math.abs(u) > umax * 0.6;
+  let graceOut = 0;
   if (Math.abs(u) > umax) {
     if (!open) {
+      // 縁の猶予（proto5）の中のまま開口部が終わった（直前の刻みで猶予の中にいた玉だけ）：まだ外へ動いていれば落ちる。止まっている・戻りかけていれば、今までどおりレールの線へ戻す
+      if (INPUT.src === 'gyro' && Math.abs(b.u) > FR.half + 0.02 && Math.abs(u) > FR.half + 0.02 && v3.dot(b.v, FR.l) * side > CFG.EDGE_GRACE_STOP) { b.u = u; fallStart('opening'); return; }
       u = side * umax;
       const vl = v3.dot(b.v, FR.l);
       if (vl * side > 0) { for (let i = 0; i < 3; i++) b.v[i] -= (1 + CFG.RAIL_E) * vl * FR.l[i]; G.railHits++; if (Math.abs(vl) > 0.25) Sound.play('rail', { v: Math.abs(vl) }); }
     } else if (Math.abs(u) > FR.half + 0.02) {
-      b.u = u; fallStart('opening'); return;
+      // 縁の猶予（proto5）：ジャイロのときだけ。猶予の幅の中で、外へ出る速さが遅ければ落とさない（外向きの動きは下で弱める）。それ以外は今までどおり落ちる
+      const over = Math.abs(u) - (FR.half + 0.02), vOut = v3.dot(b.v, FR.l) * side;
+      if (INPUT.src === 'gyro' && over <= CFG.EDGE_GRACE_W && vOut <= CFG.EDGE_GRACE_V) {
+        graceOut = Math.max(0, vOut);
+        if (Math.abs(b.u) <= FR.half + 0.02) { G.graceCatches++; logEvent('grace', { vOut: +vOut.toFixed(3) }); }   // 数えるだけ（検証用）
+      } else { b.u = u; fallStart('opening'); return; }
     }
   }
   // シャッター
@@ -4235,6 +4249,7 @@ function stepGround(dt) {
   for (let i = 0; i < 3; i++) b.v[i] -= vn * FR.n[i];
   const sp1 = Math.hypot(b.v[0], b.v[1], b.v[2]);
   if (sp1 > 1e-6) { const kk = Math.min(sp0, sp1 * 1.02) / sp1; for (let i = 0; i < 3; i++) b.v[i] *= kk; }
+  if (graceOut > 0) { const k = graceOut * (1 - Math.exp(-CFG.EDGE_GRACE_K * dt)) * side; for (let i = 0; i < 3; i++) b.v[i] -= k * FR.l[i]; }   // 縁の猶予：外向きの速さだけを弱める
   if (S.sweepers.length && sweeperHit(b)) return;
   if (S.plates.length && plateHit(b)) return;
   if (C.bowls.length && bowlEnterCheck(b)) { progressCheck(); return; }
@@ -4595,8 +4610,17 @@ const Gyro = {
   permitted: null, listening: false, active: false, calibrated: false,
   alpha: null, beta: null, gamma: null, u: [0, 0, 1], u0: null, pitch0: 0, roll0: 0, count: 0, lastEvent: -1, calibAngle: 0,
   ix: 0, iz: 0, rawX: 0, rawZ: 0, sens: 1, status: '', rollGain: 1,
+  // 設定「ジャイロ ON／OFF」（端末に保存。保存が無い・読めないときは ON）。OFF の間は許可を求めず、イベントも捨てる
+  enabled: (() => { try { return localStorage.getItem('hoshimizo.gyro') !== '0'; } catch (e) { return true; } })(),
+  setEnabled(b) {
+    this.enabled = !!b;
+    try { localStorage.setItem('hoshimizo.gyro', this.enabled ? '1' : '0'); } catch (e) {}
+    if (!this.enabled) { this.active = this.calibrated = false; this.count = 0; this.ix = this.iz = this.rawX = this.rawZ = 0; }
+    return this.enabled;
+  },
   // プレイ開始のタップの中で呼ぶ（iOS の許可ダイアログはユーザー操作の中でしか出せない）
   request() {
+    if (!this.enabled) { this.status = 'off'; return Promise.resolve(false); }
     if (!this.supported) { this.permitted = false; this.status = 'unsupported'; return Promise.resolve(false); }
     if (this.needsPermission) {
       let p;
@@ -4623,7 +4647,7 @@ const Gyro = {
     addEventListener('orientationchange', reCal);
   },
   onEvent(e) {
-    if (e.beta == null || e.gamma == null) return;
+    if (!this.enabled || e.beta == null || e.gamma == null) return;
     this.alpha = e.alpha; this.beta = e.beta; this.gamma = e.gamma;
     const b = e.beta * Math.PI / 180, g = e.gamma * Math.PI / 180;
     // 端末座標での「上」向き（W3C の Z-X'-Y'' 回転から）
@@ -4672,7 +4696,7 @@ const Gyro = {
     return { x: this.ix, z: this.iz };
   },
   state() {
-    return { permitted: this.permitted, calibrated: this.calibrated, beta: this.beta, gamma: this.gamma, alpha: this.alpha, active: this.active, supported: this.supported,
+    return { enabled: this.enabled, permitted: this.permitted, calibrated: this.calibrated, beta: this.beta, gamma: this.gamma, alpha: this.alpha, active: this.active, supported: this.supported,
       needsPermission: this.needsPermission, status: this.status, screenAngle: this.angle(), calibratedAngle: this.calibAngle, events: this.count,
       input: { x: +this.ix.toFixed(4), z: +this.iz.toFixed(4) }, raw: { x: +this.rawX.toFixed(4), z: +this.rawZ.toFixed(4) }, sensitivity: this.sens };
   },
@@ -5027,10 +5051,11 @@ const UI = {
     $('bCal').onclick = () => { Gyro.calibrate(); Sound.play('ui'); this.msg('今の持ち方を水平にしました', ''); };
     $('bMute').onclick = $('bMute2').onclick = () => { Sound.unlock(); Sound.mute(!Sound.muted); };
     $('bMenu').onclick = () => this.showTitle();
+    $('bGyro').onclick = () => { Sound.unlock(); Gyro.setEnabled(!Gyro.enabled); Sound.play('ui'); this.syncGyro(); this.syncInput(); };
     $('bNext').onclick = () => { Sound.play('ui'); $('result').classList.add('hidden'); setStage((S.def.id % STAGES.length) + 1); if (!this.introSeen[S.def.id]) startIntro('play'); else enterReady('play'); };
     $('bAgain').onclick = () => this.again();
     $('bSel').onclick = () => { $('result').classList.add('hidden'); this.showTitle(); };
-    this.syncMute(); this.syncCam();
+    this.syncMute(); this.syncCam(); this.syncGyro();
   },
   renderCards() {
     $('stageCards').innerHTML = STAGES.map((d, i) => { const b = getBest(d.id);
@@ -5058,11 +5083,12 @@ const UI = {
   },
   hint() {
     const gy = Gyro.active && Gyro.calibrated;
-    const h = gy ? 'スマホを傾けて操作 ・ ⇆ で今の持ち方を水平に' : (Gyro.permitted === false && Gyro.needsPermission ? '傾きセンサーが許可されなかったので、スティック／キーで操作' : 'スティック／矢印キーで傾ける ・ ドラッグで視点');
+    const h = gy ? 'スマホを傾けて操作 ・ ⇆ で今の持ち方を水平に' : (Gyro.enabled && Gyro.permitted === false && Gyro.needsPermission ? '傾きセンサーが許可されなかったので、スティック／キーで操作' : 'スティック／矢印キーで傾ける ・ ドラッグで視点');
     this.msg('盤を傾けて、星をなぞって月の盃へ', h);
   },
   msg(a, b) { $('msg').firstChild.nodeValue = a; $('hint').textContent = b || ''; },
   syncMute() { const m = Sound.muted; for (const id of ['bMute', 'bMute2']) { const el = $(id); el.classList.toggle('on', !m); el.querySelector('.w').style.display = m ? 'none' : ''; el.querySelector('.x').style.display = m ? '' : 'none'; } },
+  syncGyro() { const on = Gyro.enabled, el = $('bGyro'); el.classList.toggle('on', on); el.textContent = on ? 'ジャイロ ON' : 'ジャイロ OFF'; el.setAttribute('aria-pressed', on ? 'true' : 'false'); },
   syncCam() { $('bCam').classList.toggle('on', Cam.mode !== 'board'); $('bCam').title = { soft: '少し追う（C）', follow: '球を追う（C）', board: '全体（C）' }[Cam.mode]; },
   introSeen: {},
   ready(on) { $('readyCue').classList.toggle('show', !!on); },
@@ -5471,7 +5497,7 @@ function read() {
     openings: C.openings.map(o => ({ side: o.side > 0 ? 'right' : 'left', from: o.from, to: o.to })),
     jumps: { tries: G.jumps.tries, ok: G.jumps.ok, fail: G.jumps.fail },
     shutters: S.shutters.map(sh => ({ progress: r4(sh.s / C.L), closed: r4(shutterClosed(sh)) })),
-    railHits: G.railHits, camera: Cam.mode, autoClock, threeRevision: THREE.REVISION,
+    railHits: G.railHits, graceCatches: G.graceCatches, camera: Cam.mode, autoClock, threeRevision: THREE.REVISION,
   };
 }
 
