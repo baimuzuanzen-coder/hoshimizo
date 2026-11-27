@@ -7980,11 +7980,18 @@ const Sound = (() => {
   };
 })();
 
-// ---------------------------------------------------------------- 14 カメラ
+// ---------------------------------------------------------------- 14 カメラ（縁滑走・自動回転追従）
+const _camFR = { p: [0, 0, 0], t: [0, 0, 0], l: [0, 0, 0], n: [0, 0, 0], half: 0.5, kap: 0 };
+const _camV0 = new THREE.Vector3(), _camV1 = new THREE.Vector3(), _camV2 = new THREE.Vector3(), _camV3 = new THREE.Vector3();
 const Cam = {
   mode: 'soft', overMix: 0, yawOff: 0, pitchOff: 0, zoomMix: 0, yawNow: 0.24, pitchNow: 0.56, dist: 21,
   target: new THREE.Vector3(0, 0.6, 0.15), follow: new THREE.Vector3(), fitCache: {}, kick: 0,
   BASE_YAW: 0.14, BASE_PITCH: 0.43, MX: 0.92, MY: 0.9, ZOOM: 0.94, CTR_DY: 0.22, FOLLOW_K: 0.5, SOFT: 0.3, BIG_SOFT: 0.72, nearD: 0,   // カバー画像の構図に合わせた値
+  // 自動追従（縁滑走オービット）用の状態
+  autoYaw: 0.14, yawVel: 0, autoPitch: 0.50, autoMix: 0, manualHold: 0, dragging: false,
+  lookOff: new THREE.Vector3(), camPosSmooth: new THREE.Vector3(), _stageId: -1, _inited: false, _titleExitYaw: null,
+  MANUAL_HOLD_SEC: 4.5,
+  shortAngle(a) { return ((a + Math.PI) % TAU + TAU) % TAU - Math.PI; },
   portrait() { return camera.aspect < 0.92; },
   baseYaw() { return this.portrait() ? this.BASE_YAW + Math.PI / 2 : this.BASE_YAW; },
   basePitch() { return this.portrait() ? 0.74 : this.BASE_PITCH; },
@@ -8041,6 +8048,111 @@ const Cam = {
     }
     return (this.fitCache[key] = { d: hi, ctr });
   },
+  // 連続回転時にキャッシュ肥大・毎フレーム探索を防ぐ 0° / 90° 2点補間
+  fitFast(yaw, pitch, aspect, ref = false) {
+    const pq = Math.round(pitch * 25) / 25;
+    const f0 = this.fit(0, pq, aspect, ref);
+    const f90 = this.fit(Math.PI / 2, pq, aspect, ref);
+    const s2 = Math.sin(yaw) ** 2;
+    return { d: lerp(f0.d, f90.d, s2), ctr: _camV3.copy(f0.ctr).lerp(f90.ctr, s2) };
+  },
+  // コース先読み方向とローカル先読みオフセット・目標方位角（盤ローカル座標系なので盤傾きに揺れない）
+  computeGoal(useInertia = true) {
+    const b = G.ball, C = S.C;
+    const isF = this.mode === 'follow';
+    const bx = b.p[0], by = Math.max(-1, b.p[1]), bz = b.p[2];
+    const s0 = G.state === 'ready' ? S.def.startS : clamp(b.s, 0, C.L);
+    let fx = 0, fz = 0, lox = 0, loy = 0, loz = 0;
+    let freezeYaw = (b.mode === 'fall' || b.mode === 'crack' || b.mode === 'basket');
+    if (b.mode === 'bowl' && b.bowl) {
+      const w = b.bowl;
+      C.frame(clamp(w.sLand, 0, C.L), _camFR);
+      const dx = _camFR.p[0] - w.x, dz = _camFR.p[2] - w.z, dl = Math.hypot(dx, dz) || 1;
+      fx = dx / dl; fz = dz / dl;
+      lox = (w.x - bx) * 0.6 + fx * 0.65; loy = -0.1; loz = (w.z - bz) * 0.6 + fz * 0.65;
+    } else if (b.mode === 'lift' && b.lift) {
+      const w = b.lift;
+      C.frame(clamp(w.sOut, 0, C.L), _camFR);
+      const dx = _camFR.p[0] - w.x, dz = _camFR.p[2] - w.z, dl = Math.hypot(dx, dz) || 1;
+      fx = dx / dl; fz = dz / dl;
+      lox = (w.x - bx) * 0.55 + fx * 0.65; loy = 0.08; loz = (w.z - bz) * 0.55 + fz * 0.65;
+    } else if ((b.mode === 'wheel' || b.mode === 'wret') && b.wheel) {
+      const w = b.wheel;
+      C.frame(clamp(w.sOut, 0, C.L), _camFR);
+      const dx = _camFR.p[0] - bx, dz = _camFR.p[2] - bz, dl = Math.hypot(dx, dz) || 1;
+      fx = dx / dl; fz = dz / dl;
+      lox = fx * 0.7; loy = 0.25; loz = fz * 0.7;
+    } else {
+      C.frame(s0, _camFR);
+      const p0x = _camFR.p[0], p0y = _camFR.p[1], p0z = _camFR.p[2];
+      const t0x = _camFR.t[0], t0z = _camFR.t[2];
+      const dsList = BOARD.big ? [1.2, 2.5, 4.2, 6.2] : [0.9, 1.9, 3.2, 4.8];
+      const ws = [0.28, 0.32, 0.25, 0.15];
+      for (let k = 0; k < dsList.length; k++) {
+        C.frame(Math.min(C.L, s0 + dsList[k]), _camFR);
+        const dx = _camFR.p[0] - p0x, dz = _camFR.p[2] - p0z, dl = Math.hypot(dx, dz);
+        if (dl > 0.15) { fx += (dx / dl) * ws[k]; fz += (dz / dl) * ws[k]; }
+      }
+      let fl = Math.hypot(fx, fz);
+      if (fl < 0.18) {
+        fx = 0; fz = 0;
+        for (const d of [0.6, 1.4]) {
+          C.frame(Math.min(C.L, s0 + d), _camFR);
+          const dx = _camFR.p[0] - p0x, dz = _camFR.p[2] - p0z, dl = Math.hypot(dx, dz);
+          if (dl > 0.08) { fx += dx / dl; fz += dz / dl; }
+        }
+        fl = Math.hypot(fx, fz);
+      }
+      if (fl > 0.05) { fx /= fl; fz /= fl; }
+      else { const tl = Math.hypot(t0x, t0z) || 1; fx = t0x / tl; fz = t0z / tl; }
+      // 先読み注視オフセット（進行方向先のコースを見せる）
+      const aheadS = Math.min(C.L, s0 + (isF ? 2.8 : 2.3));
+      C.frame(aheadS, _camFR);
+      const kL = isF ? 0.56 : 0.44;
+      lox = (_camFR.p[0] - p0x) * kL; loy = clamp((_camFR.p[1] - p0y) * 0.35, -0.45, 0.45); loz = (_camFR.p[2] - p0z) * kL;
+      const ll = Math.hypot(lox, loz), maxL = isF ? 2.0 : 1.7;
+      if (ll > maxL) { lox *= maxL / ll; loz *= maxL / ll; }
+      if (b.mode === 'fall' || b.mode === 'crack') { lox *= 0.25; loz *= 0.25; loy = 0; }
+    }
+    // 盤中心からの正規化位置（縁の外側方向）と進行後方ベクトルを合成
+    const qx = bx + lox * 0.35, qz = bz + loz * 0.35;
+    const ux = qx / (BOARD.w * 0.5), uz = qz / (BOARD.d * 0.5);
+    const r = Math.hypot(ux, uz);
+    const tR = clamp((r - 0.12) / 0.58, 0, 1);
+    const wR = tR * tR * (3 - 2 * tR);
+    const ox = r > 1e-4 ? ux / r : 0, oz = r > 1e-4 ? uz / r : 1;
+    const curX = Math.sin(this.autoYaw), curZ = Math.cos(this.autoYaw);
+    let oSafeX = ox, oSafeZ = oz;
+    // 盤の中央から外周に向かって進むとき、カメラが正面（向かい風）へ回り込んで反転しないよう横の縁側へ逃がす
+    const dotOF = ox * fx + oz * fz;
+    if (dotOF > 0) {
+      oSafeX = ox - dotOF * fx; oSafeZ = oz - dotOF * fz;
+      const sl = Math.hypot(oSafeX, oSafeZ);
+      const px = -fz, pz = fx;   // 進行方向に対する左直交（横の縁）
+      const side = (useInertia ? (curX * px + curZ * pz) : (ox * px + oz * pz)) >= 0 ? 1 : -1;
+      if (sl < 0.35) {
+        const mix = clamp((0.35 - sl) / 0.35, 0, 1);
+        oSafeX = lerp(oSafeX, side * px * 0.75, mix);
+        oSafeZ = lerp(oSafeZ, side * pz * 0.75, mix);
+      }
+      // 強い向かい風ほど外側重みを抑えて斜め後ろを維持
+      const damp = 1 - 0.45 * dotOF;
+      oSafeX *= damp; oSafeZ *= damp;
+    }
+    const behX = -fx, behZ = -fz;
+    const wOut = (isF ? 0.92 : 1.08) * wR;
+    const wBeh = isF ? 0.96 : 0.74;
+    const wInert = useInertia ? (isF ? 0.14 : 0.22) : 0;
+    const vx = wOut * oSafeX + wBeh * behX + wInert * curX;
+    const vz = wOut * oSafeZ + wBeh * behZ + wInert * curZ;
+    const vl = Math.hypot(vx, vz);
+    const wantYaw = freezeYaw ? this.autoYaw : (vl > 0.05 ? Math.atan2(vx, vz) : this.autoYaw);
+    // 高さに応じた穏やかな俯角（高い場所＝螺旋上段などでは少し浅め、低い盤面では少し見下ろし）
+    const baseP = this.portrait() ? (isF ? 0.60 : 0.66) : (isF ? 0.47 : 0.52);
+    const hNorm = clamp((by - 1.2) / Math.max(2.5, this.topH() - 1.2), -0.35, 1);
+    const wantPitch = clamp(baseP - 0.08 * hNorm, 0.34, 0.78);
+    return { wantYaw, wantPitch, lox, loy, loz, bx, by, bz };
+  },
   // ムービー：①スタート寄り → ①最初の星寄り → ②右へ流す → ③全体へ引く、を 1 本のなめらかな曲線でつなぐ
   introShot(dt, yaw, pitch) {
     board.updateMatrixWorld();
@@ -8063,79 +8175,229 @@ const Cam = {
     const tg = new THREE.Vector3(cr(k0.tg.x, k1.tg.x, k2.tg.x, k3.tg.x), cr(k0.tg.y, k1.tg.y, k2.tg.y, k3.tg.y), cr(k0.tg.z, k1.tg.z, k2.tg.z, k3.tg.z));
     const yw = cr(k0.yw, k1.yw, k2.yw, k3.yw), pt = cr(k0.pt, k1.pt, k2.pt, k3.pt), d = cr(k0.d, k1.d, k2.d, k3.d);
     camera.position.set(tg.x + Math.sin(yw) * Math.cos(pt) * d, tg.y + Math.sin(pt) * d, tg.z + Math.cos(yw) * Math.cos(pt) * d);
-    camera.lookAt(tg); this.yawNow = yw; this.target.copy(tg); this.follow.copy(tg);
+    camera.lookAt(tg); this.yawNow = yw; this.pitchNow = pt; this.dist = d; this.target.copy(tg); this.follow.copy(tg);
+    this.autoYaw = yw; this.autoPitch = pt; this.yawVel = 0;
     return true;
   },
-  toggle() { this.mode = { soft: 'follow', follow: 'board', board: 'soft' }[this.mode] || 'soft'; this.yawOff = this.pitchOff = 0; UI.syncCam(); return this.mode; },
-  set(m) { if (m === 'toggle') return this.toggle(); if (m === 'board' || m === 'follow' || m === 'soft') { this.mode = m; this.yawOff = this.pitchOff = 0; UI.syncCam(); } return this.mode; },
+  toggle() { this.mode = { soft: 'follow', follow: 'board', board: 'soft' }[this.mode] || 'soft'; this.yawOff = this.pitchOff = 0; this.manualHold = 0; UI.syncCam(); return this.mode; },
+  set(m) { if (m === 'toggle') return this.toggle(); if (m === 'board' || m === 'follow' || m === 'soft') { this.mode = m; this.yawOff = this.pitchOff = 0; this.manualHold = 0; UI.syncCam(); } return this.mode; },
   titleMix: 1, titleAng: 0,
   update(dt) {
+    const dtC = Math.min(0.05, Math.max(0, dt));
+    const stageChanged = S && this._stageId !== S.def.id;
+    if (stageChanged) { this._stageId = S.def.id; this.nearD = 0; this.manualHold = 0; this.yawVel = 0; }
     const titleWant = UI.titleOpen ? 1 : 0;
+    const wasTitle = this.titleMix > 0.5 && !UI.titleOpen && this._titleExitYaw === null;
+    if (UI.titleOpen) this._titleExitYaw = null;
+    else if (wasTitle) this._titleExitYaw = this.baseYaw() + this.yawOff + this.shortAngle(this.titleAng);
     if (this.snap || dt === 0) this.titleMix = titleWant;
-    else this.titleMix += (titleWant - this.titleMix) * (1 - Math.exp(-4.5 * dt));
-    if (UI.titleOpen) this.titleAng = (this.titleAng + dt * 0.105) % TAU;
-    const yawPlay = this.baseYaw() + this.yawOff;
-    let yawDiff = ((this.titleAng + Math.PI) % TAU + TAU) % TAU - Math.PI;
-    let yaw = yawPlay + yawDiff * this.titleMix;
-    let pitch = clamp(this.basePitch() + this.pitchOff - (this.portrait() ? 0.08 : 0.05) * this.titleMix, 0.2, 1.25);
-    let dMul = 1 + (this.portrait() ? 0.16 : 0.19) * this.titleMix;
-    if (G.state === 'intro' && this.introShot(dt, yawPlay, clamp(this.basePitch() + this.pitchOff, 0.2, 1.25))) return;
-    // ゴール後は真上からの俯瞰
-    this.overMix += ((G.state === 'clear' ? 1 : 0) - this.overMix) * (1 - Math.exp(-1.3 * dt));
-    if (this.overMix > 0.001) { pitch = lerp(pitch, 1.5, this.overMix); yaw = lerp(yaw, this.portrait() ? Math.PI / 2 : 0, this.overMix); }
-    this.yawNow = yaw; this.pitchNow = pitch;
-    // タイトル展示のゆっくり360°回転時は 0° / 90° のキャッシュ2点補間で毎フレームの再探索を回避
-    let f;
-    if (this.titleMix > 0.001 && UI.titleOpen) {
+    else this.titleMix += (titleWant - this.titleMix) * (1 - Math.exp(-4.5 * dtC));
+    if (UI.titleOpen) this.titleAng = (this.titleAng + dtC * 0.105) % TAU;
+
+    // 1. タイトル画面の完全展示回転（現行のまま 100% 維持）
+    if (UI.titleOpen && this.titleMix > 0.999) {
+      const yawPlay = this.baseYaw() + this.yawOff;
+      const yawDiff = this.shortAngle(this.titleAng);
+      const yaw = yawPlay + yawDiff * this.titleMix;
+      const pitch = clamp(this.basePitch() + this.pitchOff - (this.portrait() ? 0.08 : 0.05) * this.titleMix, 0.2, 1.25);
+      const dMul = 1 + (this.portrait() ? 0.16 : 0.19) * this.titleMix;
       const f0 = this.fit(this.baseYaw(), pitch, camera.aspect);
       const f90 = this.fit(this.baseYaw() + Math.PI / 2, pitch, camera.aspect);
       const s2 = Math.sin(this.titleAng + this.yawOff) ** 2;
-      f = { d: lerp(f0.d, f90.d, s2), ctr: _v3.copy(f0.ctr).lerp(f90.ctr, s2) };
-    } else f = this.fit(yaw, pitch, camera.aspect);
-    const playView = !UI.titleOpen && G.state !== 'intro' && G.state !== 'clear';
-    const want = !playView ? 0 : this.mode === 'follow' ? 1 : this.mode === 'soft' ? (BOARD.big ? this.BIG_SOFT : this.SOFT) : 0;
-    this.zoomMix += (want - this.zoomMix) * (1 - Math.exp(-5 * dt));
-    board.updateMatrixWorld();
-    const bp = _v1.fromArray(G.ball.p); board.localToWorld(bp);
-    if (G.ball.p[1] < -2) bp.y = -1;
-    if (this.snap) { this.follow.copy(bp); this.snap = false; } else this.follow.lerp(bp, 1 - Math.exp(-6 * dt));
-    this.target.copy(f.ctr).lerp(this.follow, this.zoomMix);
-    if (BOARD.big) {
-      // 広い盤（S6）：プレイ中の距離は従来の盤での同じモードの距離にそろえ、狙いを球の方へ大きく寄せる
-      const fr = this.fit(yaw, pitch, camera.aspect, true);
-      const near = fr.d * (this.mode === 'follow' ? this.FOLLOW_K : 1 - this.SOFT * (1 - this.FOLLOW_K));
-      this.nearD = this.nearD ? this.nearD + (near - this.nearD) * (1 - Math.exp(-5 * dt)) : near;
-      this.dist = lerp(f.d, this.nearD, clamp(this.zoomMix / this.BIG_SOFT, 0, 1)) * (1 - this.kick * 0.02) * dMul;
-    } else this.dist = f.d * lerp(1, this.FOLLOW_K, this.zoomMix) * (1 - this.kick * 0.02) * dMul;
-    this.kick *= Math.exp(-6 * dt);
-    if (this.titleMix > 0.001) {
-      // タイトル時は3D盤を画面の上〜中央の展示空間へ持ち上げ、下部のプレート帯と重ならないようにする
+      const f = { d: lerp(f0.d, f90.d, s2), ctr: _v3.copy(f0.ctr).lerp(f90.ctr, s2) };
+      this.overMix = 0; this.zoomMix = 0; this.autoMix = 0; this.yawVel = 0;
+      this.yawNow = yaw; this.pitchNow = pitch;
+      this.target.copy(f.ctr);
+      this.dist = f.d * (1 - this.kick * 0.02) * dMul;
+      this.kick *= Math.exp(-6 * dtC);
       const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * this.dist;
       const shiftDown = (this.portrait() ? 0.27 : 0.34) * halfH * this.titleMix;
       const ux = -Math.sin(yaw) * Math.sin(pitch), uy = Math.cos(pitch), uz = -Math.cos(yaw) * Math.sin(pitch);
       this.target.x -= ux * shiftDown; this.target.y -= uy * shiftDown; this.target.z -= uz * shiftDown;
+      camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * this.dist, this.target.y + Math.sin(pitch) * this.dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * this.dist);
+      camera.lookAt(this.target);
+      this.camPosSmooth.copy(camera.position);
+      this.snap = false;
+      return;
     }
-    camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * this.dist, this.target.y + Math.sin(pitch) * this.dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * this.dist);
+
+    // 2. イントロムービー
+    if (G.state === 'intro') {
+      const g0 = this.computeGoal(false);
+      const introYaw = this.mode === 'board' ? this.baseYaw() + this.yawOff : g0.wantYaw + this.yawOff;
+      const introPitch = clamp((this.mode === 'board' ? this.basePitch() : g0.wantPitch) + this.pitchOff, 0.2, 1.25);
+      if (this.introShot(dtC, introYaw, introPitch)) return;
+    }
+
+    // 3. プレイ中・クリア俯瞰・タイトルからのシームレス移行
+    const playView = !UI.titleOpen && G.state !== 'intro' && G.state !== 'clear';
+    const wantAuto = playView && this.mode !== 'board' ? 1 : 0;
+    const isSnap = this.snap || stageChanged || !this._inited;
+    const goal = this.computeGoal(!isSnap && !wasTitle);
+
+    if (isSnap || wasTitle) {
+      this.autoYaw = goal.wantYaw;
+      this.autoPitch = goal.wantPitch;
+      this.yawVel = 0;
+      this.lookOff.set(goal.lox, goal.loy, goal.loz);
+      if (isSnap) {
+        this.autoMix = wantAuto;
+        this.overMix = G.state === 'clear' ? 1 : 0;
+      }
+      this._inited = true;
+    } else {
+      // 手動ドラッグ後は一定時間ホールドして邪魔をせず、走行中にごくゆっくり復帰
+      if (!this.dragging && this.manualHold > 0) this.manualHold = Math.max(0, this.manualHold - dtC);
+      const manualActive = this.dragging || this.manualHold > 0;
+      if (playView && this.mode !== 'board' && !manualActive) {
+        const bSpd = Math.hypot(G.ball.v[0], G.ball.v[1], G.ball.v[2]);
+        if ((bSpd > 0.30 || G.mode === 'demo') && (Math.abs(this.yawOff) > 1e-4 || Math.abs(this.pitchOff) > 1e-4)) {
+          const rec = Math.exp(-0.30 * dtC);
+          this.yawOff *= rec; this.pitchOff *= rec;
+          if (Math.abs(this.yawOff) < 1e-4) this.yawOff = 0;
+          if (Math.abs(this.pitchOff) < 1e-4) this.pitchOff = 0;
+        }
+        const isF = this.mode === 'follow';
+        const d = this.shortAngle(goal.wantYaw - this.autoYaw);
+        const dead = isF ? 0.035 : 0.055;
+        const eff = Math.abs(d) <= dead ? 0 : Math.sign(d) * (Math.abs(d) - dead);
+        const kp = isF ? 1.45 : 1.15, maxRate = isF ? 1.25 : 1.05, maxAcc = isF ? 2.4 : 1.8;
+        const wantVel = clamp(eff * kp, -maxRate, maxRate);
+        const dv = clamp((wantVel - this.yawVel) * (1 - Math.exp(-3.4 * dtC)), -maxAcc * dtC, maxAcc * dtC);
+        this.yawVel += dv;
+        this.autoYaw += this.yawVel * dtC;
+      } else {
+        this.yawVel *= Math.exp(-8 * dtC);
+      }
+      this.autoPitch += (goal.wantPitch - this.autoPitch) * (1 - Math.exp(-2.2 * dtC));
+      this.lookOff.lerp(_camV0.set(goal.lox, goal.loy, goal.loz), 1 - Math.exp(-3.4 * dtC));
+      this.autoMix += (wantAuto - this.autoMix) * (1 - Math.exp(-4.0 * dtC));
+    }
+
+    // ゴール後は真上からの俯瞰
+    this.overMix += ((G.state === 'clear' ? 1 : 0) - this.overMix) * (1 - Math.exp(-1.3 * dtC));
+    const wantZoom = !playView ? 0 : this.mode === 'follow' ? 1 : this.mode === 'soft' ? (BOARD.big ? this.BIG_SOFT : this.SOFT) : 0;
+    if (isSnap) this.zoomMix = wantZoom;
+    else this.zoomMix += (wantZoom - this.zoomMix) * (1 - Math.exp(-5 * dtC));
+
+    // 盤固定モード（board）の方位と自動追従モードの方位を最短角で連続補間
+    const boardYaw = this.baseYaw() + this.yawOff;
+    const autoYawWithOff = this.autoYaw + this.yawOff;
+    let yaw = boardYaw + this.shortAngle(autoYawWithOff - boardYaw) * this.autoMix;
+    let pitch = clamp(lerp(this.basePitch(), this.autoPitch, this.autoMix) + this.pitchOff, 0.22, 1.25);
+
+    // タイトル→プレイへのシームレス移行（最短角補間）
+    if (this.titleMix > 0.001) {
+      const tYaw = this._titleExitYaw !== null ? this._titleExitYaw : (boardYaw + this.shortAngle(this.titleAng));
+      yaw = yaw + this.shortAngle(tYaw - yaw) * this.titleMix;
+      pitch = clamp(pitch - (this.portrait() ? 0.08 : 0.05) * this.titleMix, 0.2, 1.25);
+    }
+    // クリア後俯瞰（最短角補間なので何周回った後でも急回転しない）
+    if (this.overMix > 0.001) {
+      const overYaw = this.portrait() ? Math.PI / 2 : 0;
+      yaw = yaw + this.shortAngle(overYaw - yaw) * this.overMix;
+      pitch = lerp(pitch, 1.5, this.overMix);
+    }
+
+    const dMul = 1 + (this.portrait() ? 0.16 : 0.19) * this.titleMix;
+    const f = this.fitFast(yaw, pitch, camera.aspect, false);
+    const fRef = BOARD.big ? this.fitFast(yaw, pitch, camera.aspect, true) : f;
+
+    // 玉の追従位置（盤傾きの細かな上下ノイズを抑え、酔いにくさを高める）
+    board.updateMatrixWorld();
+    const bp = _camV1.set(goal.bx, goal.by, goal.bz);
+    // ローカル座標ベースで安定させつつ、盤の見た目の傾きは控えめ(0.35)に反映
+    const bpW = _camV2.copy(bp); board.localToWorld(bpW);
+    bp.lerp(bpW, 0.35);
+    if (isSnap) this.follow.copy(bp);
+    else this.follow.lerp(bp, 1 - Math.exp(-5.5 * dtC));
+
+    // 注視点：全体俯瞰（f.ctr）と「玉＋先読み（盤中心寄りブレンド）」を滑らかに補間
+    const isF = this.mode === 'follow';
+    const followCenterW = isF ? 0.88 : (BOARD.big ? 0.80 : 0.68);
+    const goalLookX = lerp(f.ctr.x, this.follow.x + this.lookOff.x, followCenterW);
+    const goalLookZ = lerp(f.ctr.z, this.follow.z + this.lookOff.z, followCenterW);
+    const goalLookY = lerp(f.ctr.y, lerp(Math.min(1.4, this.topH() * 0.35), this.follow.y, 0.80) + this.lookOff.y, isF ? 0.88 : 0.78);
+    const playTarget = _camV0.set(goalLookX, goalLookY, goalLookZ);
+    this.target.copy(f.ctr).lerp(playTarget, this.autoMix * (1 - this.overMix) * (1 - this.titleMix));
+
+    // 距離と「ステージの縁の上空を滑る」水平軌道
+    const nearK = isF ? 0.50 : 0.68;
+    const nearTarget = fRef.d * nearK;
+    this.nearD = (isSnap || !this.nearD) ? nearTarget : this.nearD + (nearTarget - this.nearD) * (1 - Math.exp(-4.5 * dtC));
+    const boardDist = f.d * (1 - this.kick * 0.02) * dMul;
+    const autoDist = this.nearD * (1 - this.kick * 0.02) * dMul;
+    const effAuto = this.autoMix * (1 - this.overMix) * (1 - this.titleMix);
+    const dUse = lerp(boardDist, autoDist, effAuto);
+    this.kick *= Math.exp(-6 * dtC);
+
+    if (this.titleMix > 0.001) {
+      const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * dUse;
+      const shiftDown = (this.portrait() ? 0.27 : 0.34) * halfH * this.titleMix;
+      const ux = -Math.sin(yaw) * Math.sin(pitch), uy = Math.cos(pitch), uz = -Math.cos(yaw) * Math.sin(pitch);
+      this.target.x -= ux * shiftDown; this.target.y -= uy * shiftDown; this.target.z -= uz * shiftDown;
+    }
+
+    // 縁滑走オービット位置：盤中心と注視点の中間を基準に、ステージの縁の外周上空を滑らかに周回
+    const dirX = Math.sin(yaw), dirZ = Math.cos(yaw);
+    const hDes = dUse * Math.cos(pitch);
+    const anchorK = lerp(1.0, isF ? 0.66 : 0.44, effAuto);
+    let cx = this.target.x * anchorK + dirX * hDes;
+    let cz = this.target.z * anchorK + dirZ * hDes;
+    // 注視点（玉）からの水平距離が極端に縮んだり伸びすぎたりしないようソフトに制限
+    if (effAuto > 0.001) {
+      const rx = cx - this.target.x, rz = cz - this.target.z, rh = Math.hypot(rx, rz) || 1;
+      const minH = hDes * 0.80, maxH = hDes * 1.18;
+      if (rh < minH) { cx = this.target.x + rx * (minH / rh); cz = this.target.z + rz * (minH / rh); }
+      else if (rh > maxH) { cx = this.target.x + rx * (maxH / rh); cz = this.target.z + rz * (maxH / rh); }
+      // 盤の縁の内側へ潜り込まない外周ガード
+      const ex = BOARD.w * 0.5 + 0.6, ez = BOARD.d * 0.5 + 0.6;
+      const er = Math.hypot(cx / ex, cz / ez);
+      if (er < 1.0 && er > 1e-4) { cx /= er; cz /= er; }
+    }
+    const hNow = Math.hypot(cx - this.target.x, cz - this.target.z);
+    let cy = this.target.y + hNow * Math.tan(pitch);
+    if (effAuto > 0.001) cy = Math.max(cy, lerp(cy, 3.0, effAuto));
+
+    if (isSnap) {
+      this.camPosSmooth.set(cx, cy, cz);
+      this.snap = false;
+    } else {
+      // 位置も軽い2次平滑を通して段差ゼロに
+      this.camPosSmooth.lerp(_camV1.set(cx, cy, cz), 1 - Math.exp(-8.5 * dtC));
+    }
+    camera.position.copy(this.camPosSmooth);
     camera.lookAt(this.target);
+
+    // 実際のカメラ視線方位を yawNow / pitchNow に厳密一致させる（ジャイロ・スティック操作方向と画面を完全一致）
+    const dx = camera.position.x - this.target.x, dy = camera.position.y - this.target.y, dz = camera.position.z - this.target.z;
+    const hd = Math.hypot(dx, dz) || 1;
+    this.yawNow = Math.atan2(dx, dz);
+    this.pitchNow = Math.atan2(dy, hd);
+    this.dist = Math.hypot(hd, dy);
   },
 };
 // ドラッグで視点、短いタップで（落下後）やり直し
 {
   let drag = null;
-  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now(), id: e.pointerId }; try { canvas.setPointerCapture(e.pointerId); } catch (err) {} Sound.unlock(); });
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now(), id: e.pointerId, moved: false }; try { canvas.setPointerCapture(e.pointerId); } catch (err) {} Sound.unlock(); });
   canvas.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 4) { drag.moved = true; Cam.dragging = true; }
+    if (drag.moved) { Cam.manualHold = Cam.MANUAL_HOLD_SEC; }
     Cam.yawOff -= (e.clientX - drag.x) * 0.0055; Cam.pitchOff = clamp(Cam.pitchOff + (e.clientY - drag.y) * 0.004, -0.35, 0.6);
     drag.x = e.clientX; drag.y = e.clientY;
   });
   const end = e => {
     if (!drag || e.pointerId !== drag.id) return;
     const moved = Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0), quick = performance.now() - drag.t < 400;
+    if (drag.moved) Cam.manualHold = Cam.MANUAL_HOLD_SEC;
+    Cam.dragging = false;
     drag = null;
     if (moved < 10 && quick) { if (G.state === 'intro') endIntro(); else if (G.state === 'ready' && !UI.titleOpen) tapStart(); else if (G.state === 'failed' || G.state === 'falling') retry(); }
   };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  canvas.addEventListener('dblclick', () => { Cam.yawOff = Cam.pitchOff = 0; });
+  canvas.addEventListener('dblclick', () => { Cam.yawOff = Cam.pitchOff = 0; Cam.manualHold = 0; });
 }
 
 // ---------------------------------------------------------------- 15 UI
@@ -8295,7 +8557,7 @@ const UI = {
   syncMute() { const m = Sound.muted; for (const id of ['bMute', 'bMute2']) { const el = $(id); el.classList.toggle('on', !m); el.querySelector('.w').style.display = m ? 'none' : ''; el.querySelector('.x').style.display = m ? '' : 'none'; el.querySelector('.sw').textContent = m ? 'OFF' : 'ON'; } },
   // タイトルの「ジャイロ」とプレイ中の「ジャイロ」は同じ設定。両方の表示をそろえる
   syncGyro() { const on = Gyro.enabled; for (const id of ['bGyro', 'bGyroIn']) { const el = $(id); el.classList.toggle('on', on); el.querySelector('.sw').textContent = on ? 'ON' : 'OFF'; el.setAttribute('aria-pressed', on ? 'true' : 'false'); } },
-  syncCam() { $('bCam').classList.toggle('on', Cam.mode !== 'board'); $('bCam').title = { soft: '少し追う（C）', follow: '球を追う（C）', board: '全体（C）' }[Cam.mode]; },
+  syncCam() { $('bCam').classList.toggle('on', Cam.mode !== 'board'); $('bCam').title = { soft: '自動追従（C）', follow: '近め追従（C）', board: '全体（C）' }[Cam.mode]; },
   introSeen: {},
   ready(on) { $('readyCue').classList.toggle('show', !!on); },
   setStage(def) {
