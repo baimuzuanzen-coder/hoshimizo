@@ -73,23 +73,105 @@ body.titleopen #dock button{pointer-events:none}
   background:radial-gradient(circle at 35% 30%,#fff3c8,#e8b862 45%,#9a6a2a 100%);box-shadow:0 3px 10px #000a,0 0 14px #f1c57144}
 /* overlays */
 .ov{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--sa-t)) calc(16px + var(--sa-r)) calc(16px + var(--sa-b)) calc(16px + var(--sa-l));
-  background:linear-gradient(90deg,#050510e8 0%,#050510a0 42%,#05051010 75%);transition:opacity .45s}
+  background:transparent;transition:opacity .45s}
 .ov.fade{opacity:0;pointer-events:none}
-.panel{width:min(520px,94vw);margin-right:auto;margin-left:min(4vw,48px)}
-.bigT{font-family:var(--jserif);font-size:clamp(48px,9vw,96px);color:var(--cream);letter-spacing:.22em;line-height:1;
-  text-shadow:0 0 30px #f1c57166,0 0 2px #fff8,0 4px 10px #000c}
-.bigS{font-family:var(--serif);color:var(--sand);letter-spacing:.62em;font-size:clamp(11px,1.6vw,15px);margin:10px 0 4px 4px}
-.lead{font-family:var(--jserif);color:var(--cream);letter-spacing:.12em;font-size:clamp(13px,1.6vw,16px);margin:14px 0 16px;opacity:.95}
-.stages{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:0 0 16px}
-@media (max-width: 640px){ .stages{grid-template-columns:repeat(3,1fr)} }
-.panel{width:min(640px,94vw)}
+.panel{width:min(640px,94vw);margin-right:auto;margin-left:min(4vw,48px)}
 #relayBox.hidden{display:none}
-.card{position:relative;border:1px solid #b9a77a44;border-radius:12px;padding:8px 7px 7px;background:#13122099;cursor:pointer;transition:all .2s;text-align:left}
-.card .n{font-family:var(--serif);font-size:11px;letter-spacing:.3em;color:var(--sand)}
-.card .j{font-family:var(--jserif);font-size:clamp(12px,1.6vw,16px);white-space:nowrap;color:var(--cream);letter-spacing:.12em;margin:3px 0 2px}
-.card .lv{color:var(--glow);font-size:10px;letter-spacing:.05em}
-.card .b{font-family:var(--serif);font-size:11px;color:#9fb9b5;margin-top:4px;font-variant-numeric:tabular-nums}
-.card.sel{border-color:#f1c571;background:linear-gradient(180deg,#26244add,#141329dd);box-shadow:0 0 0 1px #f1c57166,0 6px 20px #0008}
+/* タイトル画面（案4：展示台＆余白ギャラリー × 案2：極細SVG目盛り弧。backdrop-filterは使用しない） */
+#title.ov{display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;padding:0;background:none;pointer-events:none}
+#title .t-top{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+  padding:calc(12px + var(--sa-t)) calc(14px + var(--sa-r)) 16px calc(16px + var(--sa-l));
+  background:linear-gradient(180deg,rgba(4,4,10,.78) 0%,rgba(4,4,10,.36) 62%,rgba(4,4,10,0) 100%);
+  transition:transform .42s cubic-bezier(.22,.9,.32,1), opacity .38s}
+#title.fade .t-top{transform:translateY(-16px);opacity:0}
+#title .t-head{position:relative;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none;padding-left:2px}
+#title .t-arc{position:absolute;left:-8px;top:-6px;width:clamp(150px,24vw,240px);height:auto;overflow:visible;pointer-events:none;opacity:.82}
+#title .t-arc .a-main{fill:none;stroke:var(--stage-accent,#cfa964);stroke-width:1.1;opacity:.62;transition:stroke .35s}
+#title .t-arc .a-sub{fill:none;stroke:var(--stage-accent,#cfa964);stroke-width:.65;opacity:.30;transition:stroke .35s}
+#title .t-arc .a-ticks{stroke:var(--stage-accent,#cfa964);stroke-width:.85;opacity:.48;transition:stroke .35s}
+#title .t-arc .a-dot{fill:var(--stage-accent,#cfa964);opacity:.72;transition:fill .35s}
+#title .t-titles{position:relative;z-index:1;padding-top:4px}
+.bigT{font-family:var(--jserif);font-size:clamp(30px,5.2vw,52px);color:var(--cream);letter-spacing:.22em;line-height:1;
+  text-shadow:0 0 24px rgba(241,197,113,.38),0 2px 8px rgba(0,0,0,.85)}
+.bigS{font-family:var(--serif);color:var(--sand);letter-spacing:.46em;font-size:clamp(9px,1.2vw,12px);margin:5px 0 0 2px;opacity:.9}
+#title .t-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;pointer-events:auto;padding-top:2px}
+#title .t-pill{background:rgba(12,12,22,.84);border-color:rgba(205,180,128,.34);font-size:12.5px;padding:.44em .82em .44em .68em}
+#title .t-pill.icon{width:2.35em;height:2.35em;padding:0}
+#title.fade .t-tools button{pointer-events:none}
+#helpPop{position:fixed;top:calc(62px + var(--sa-t));right:calc(14px + var(--sa-r));z-index:7;width:min(420px,calc(100vw - 28px));
+  background:rgba(12,11,22,.96);border:1px solid var(--stage-accent,#cfa964);border-radius:12px;padding:12px 14px;
+  box-shadow:0 14px 36px rgba(0,0,0,.78), inset 0 1px 0 rgba(255,245,220,.12);pointer-events:auto}
+#helpPop .hp-head{display:flex;align-items:center;justify-content:space-between;font-family:var(--jserif);font-size:13px;letter-spacing:.16em;color:var(--cream);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1)}
+#helpPop .hp-x{width:26px;height:26px;padding:0;border-radius:50%;font-size:15px;line-height:1;display:grid;place-items:center;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+#helpPop .note{margin-top:0}
+/* 下部ギャラリードック：スリムな金属プレート帯＋操作ボタン */
+#title .t-dock{position:relative;pointer-events:auto;
+  padding:14px calc(12px + var(--sa-r)) calc(10px + var(--sa-b)) calc(12px + var(--sa-l));
+  background:linear-gradient(180deg,rgba(4,4,10,0) 0%,rgba(5,5,12,.76) 24%,rgba(5,5,12,.94) 55%,rgba(4,4,10,.98) 100%);
+  transition:transform .42s cubic-bezier(.22,.9,.32,1), opacity .36s}
+#title.fade .t-dock{transform:translateY(28px);opacity:0;pointer-events:none}
+#title .t-meta-bar{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 7px;max-width:960px;position:relative}
+#title .t-meta-bar::before{content:"";position:absolute;left:12%;right:12%;top:-8px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--stage-accent,#cfa964) 50%,transparent);opacity:.42;transition:background .35s}
+#title .t-cur-num{font-family:var(--serif);font-size:12px;letter-spacing:.26em;color:var(--stage-accent,#cfa964);transition:color .3s}
+#title .t-cur-name{font-family:var(--jserif);font-size:clamp(14px,1.9vw,18px);letter-spacing:.18em;color:var(--cream)}
+#title .t-cur-en{font-family:var(--serif);font-size:10.5px;letter-spacing:.28em;color:var(--sand);opacity:.78}
+#title .t-cur-best{font-family:var(--serif);font-size:11px;letter-spacing:.12em;color:#9fb9b5;font-variant-numeric:tabular-nums}
+#title .t-rail-wrap{display:flex;align-items:center;gap:4px;max-width:1180px;margin:0 auto}
+#title .t-nav{flex:none;width:28px;height:52px;padding:0;border-radius:8px;display:grid;place-items:center;
+  background:rgba(14,13,24,.78);border:1px solid rgba(196,170,118,.28);color:var(--sand);box-shadow:0 2px 8px rgba(0,0,0,.45)}
+#title .t-nav:hover{border-color:var(--stage-accent,#cfa964);color:var(--cream)}
+#title .t-nav:disabled{opacity:.25;cursor:default}
+#title .t-nav svg{width:16px;height:16px}
+.stages{flex:1;min-width:0;display:flex;flex-wrap:nowrap;align-items:stretch;gap:8px;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x;
+  padding:5px 8px 7px;scrollbar-width:none}
+.stages::-webkit-scrollbar{display:none}
+.t-sep{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 3px;opacity:.68;pointer-events:none}
+.t-sep::before,.t-sep::after{content:"";width:1px;flex:1;min-height:10px;background:linear-gradient(180deg,transparent,#c9a664,transparent)}
+.t-sep span{font-family:var(--jserif);font-size:9px;letter-spacing:.14em;color:var(--sand);writing-mode:vertical-rl}
+/* 金属プレート札（通常＝燻し真鍮、四季＝季節金属色枠＋小さな季節紋） */
+.card{position:relative;flex:0 0 auto;width:116px;scroll-snap-align:center;
+  border:1px solid rgba(186,158,104,.38);border-radius:8px;padding:7px 8px 6px;
+  background:linear-gradient(180deg,var(--c-bg0,#191728) 0%,var(--c-bg1,#0e0d19) 100%);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,246,224,.10), 0 3px 10px rgba(0,0,0,.5);
+  cursor:pointer;transition:transform .18s, border-color .22s, box-shadow .22s;text-align:left;overflow:hidden}
+/* 四隅の極小飾り鋲 */
+.card::before{content:"";position:absolute;inset:4px;pointer-events:none;opacity:.45;
+  background:
+    radial-gradient(circle at 2px 2px, var(--c-acc,#cfa964) 1px, transparent 1.4px),
+    radial-gradient(circle at calc(100% - 2px) 2px, var(--c-acc,#cfa964) 1px, transparent 1.4px),
+    radial-gradient(circle at 2px calc(100% - 2px), var(--c-acc,#cfa964) 1px, transparent 1.4px),
+    radial-gradient(circle at calc(100% - 2px) calc(100% - 2px), var(--c-acc,#cfa964) 1px, transparent 1.4px)}
+/* 上辺の細い金属ハイライト帯 */
+.card::after{content:"";position:absolute;left:8px;right:8px;top:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--c-acc,#cfa964),transparent);opacity:.48;pointer-events:none}
+.card .c-top{display:flex;align-items:center;justify-content:space-between;gap:4px;line-height:1}
+.card .n{font-family:var(--serif);font-size:10.5px;letter-spacing:.22em;color:var(--c-acc,var(--sand));opacity:.92}
+.card .lv{font-family:var(--serif);font-size:9.5px;letter-spacing:.04em;color:#d6b778;opacity:.85;white-space:nowrap}
+.card .j{font-family:var(--jserif);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cream);letter-spacing:.08em;margin:5px 0 3px}
+.card .b{font-family:var(--serif);font-size:10px;color:#93aba8;font-variant-numeric:tabular-nums;letter-spacing:.04em;white-space:nowrap}
+.card.seasonal{border-color:var(--c-acc,#e7a592);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.44), inset 0 0 0 3px rgba(255,255,255,.06), 0 4px 12px rgba(0,0,0,.55)}
+.card.seasonal::after{left:4px;right:4px;height:2px;opacity:.82}
+.card .crest{display:inline-flex;align-items:center;gap:2px;font-family:var(--jserif);font-size:9.5px;color:var(--c-acc);letter-spacing:.04em}
+.card .crest svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card.sel{transform:translateY(-2px);border-color:var(--c-acc,#f1c571);
+  box-shadow:0 0 0 1px var(--c-acc,#f1c571), inset 0 0 0 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,248,230,.22), 0 7px 20px rgba(0,0,0,.72)}
+.card.sel::after{left:0;right:0;height:2.5px;opacity:1}
+.card.sel .j{color:#fff9ec;text-shadow:0 0 12px rgba(255,230,175,.35)}
+#title .t-dots{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 9px}
+#title .t-dot{width:6px;height:6px;border-radius:50%;background:rgba(217,195,154,.24);border:none;padding:0;cursor:pointer;box-shadow:none;transition:transform .2s, background .2s}
+#title .t-dot.sea{width:7px;height:7px;border-radius:2px;transform:rotate(45deg)}
+#title .t-dot.on{background:var(--d-acc,#f1c571);transform:scale(1.35);box-shadow:0 0 8px var(--d-acc,#f1c571)}
+#title .t-dot.sea.on{transform:rotate(45deg) scale(1.3)}
+#title .t-dot-gap{width:8px;height:1px;background:rgba(217,195,154,.25)}
+#title .t-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+#title .t-play{min-width:154px;padding:.62em 1.5em;font-family:var(--jserif);font-size:15px;letter-spacing:.18em;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--stage-accent,#f1c571) 72%,#fff7e2),color-mix(in srgb,var(--stage-accent,#e5b25a) 88%,#7a5620));
+  color:#151218;border-color:color-mix(in srgb,var(--stage-accent,#fbe3a8) 70%,#ffffff);
+  box-shadow:0 4px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.55)}
+#title .t-watch{padding:.60em 1.2em;font-family:var(--jserif);font-size:13.5px;letter-spacing:.14em;background:rgba(16,15,28,.86);border-color:rgba(205,180,128,.36)}
+#title .t-lead{text-align:center;font-family:var(--jserif);font-size:11.5px;color:var(--sand);letter-spacing:.14em;margin-top:7px;opacity:.76}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .note{font-size:11.5px;color:#9fb9b5;letter-spacing:.04em;margin-top:14px;line-height:1.7}
 .note b{color:var(--sand);font-weight:500}
@@ -120,8 +202,16 @@ body.titleopen #dock button{pointer-events:none}
 #loading .t{font-family:var(--jserif);font-size:40px;color:var(--cream);letter-spacing:.3em;text-shadow:0 0 24px #f1c57166}
 #loading .s{font-family:var(--jserif);color:var(--sand);letter-spacing:.2em;font-size:13px}
 @media (max-aspect-ratio: 1/1){
-  .ov{align-items:flex-end;background:linear-gradient(0deg,#050510f0 0%,#050510c0 52%,#05051000 85%)}
+  #result.ov{align-items:flex-end}
   .panel{margin:0 auto}
+  #title .t-top{padding:calc(12px + var(--sa-t)) calc(12px + var(--sa-r)) 14px calc(14px + var(--sa-l))}
+  #title .bigT{font-size:clamp(30px,8.6vw,42px)}
+  #title .t-arc{width:clamp(138px,42vw,190px)}
+  #title .t-pill{font-size:11.5px;padding:.42em .72em .42em .62em}
+  #title .t-dock{padding:20px calc(8px + var(--sa-r)) calc(14px + var(--sa-b)) calc(8px + var(--sa-l))}
+  #title .card{width:108px;padding:7px 7px 6px}
+  #title .card .j{font-size:12.5px}
+  #title .t-nav{width:24px;height:48px}
   #dock{bottom:calc(10px + var(--sa-b));flex-direction:column;align-items:stretch;gap:8px}
   #ctl{flex-direction:row;flex-wrap:wrap}
   #bar{flex-direction:column-reverse;align-items:flex-end}
@@ -137,9 +227,24 @@ body.titleopen #dock button{pointer-events:none}
 }
 @media (max-width: 420px){
   #dock button{font-size:14px} #bar,#bar .g,#ctl{gap:6px}
+  #title .t-tools{gap:4px}
+  #title .t-pill{font-size:11px;padding:.38em .62em .38em .54em}
+  #title .t-pill.icon{width:2.15em;height:2.15em}
+  #title .t-cur-en{display:none}
 }
 @media (max-height: 430px){
-  .bigT{font-size:52px} .lead{margin:8px 0 10px} .stages{margin-bottom:10px} .note{margin-top:8px} .card{padding:7px 9px}
+  #title .t-top{padding:calc(6px + var(--sa-t)) calc(12px + var(--sa-r)) 8px calc(14px + var(--sa-l))}
+  #title .bigT{font-size:26px} #title .bigS{font-size:8.5px;margin-top:3px;letter-spacing:.36em}
+  #title .t-arc{width:132px;top:-8px}
+  #title .t-pill{font-size:11.5px;padding:.36em .68em .36em .58em}
+  #title .t-dock{padding:12px calc(10px + var(--sa-r)) calc(8px + var(--sa-b)) calc(10px + var(--sa-l))}
+  #title .t-meta-bar{margin-bottom:4px;gap:8px} #title .t-cur-name{font-size:13px}
+  #title .card{width:104px;padding:5px 7px 5px} #title .card .j{font-size:12px;margin:3px 0 2px} #title .card .b{font-size:9px}
+  #title .t-nav{width:24px;height:42px}
+  #title .t-dots{margin:2px 0 5px;gap:5px}
+  #title .t-play{min-width:132px;padding:.42em 1.2em;font-size:13px}
+  #title .t-watch{padding:.40em 1em;font-size:12px}
+  #title .t-lead{display:none}
   button{padding:.45em .9em} button.icon{width:2.3em;height:2.3em} button.lab{padding:.45em .85em .45em .7em}
   #dock button{font-size:14px}
   #stick{width:118px;height:118px;bottom:calc(var(--dockH,38px) + 26px + var(--sa-b))}
@@ -182,18 +287,51 @@ body.titleopen #dock button{pointer-events:none}
 <div id="toast"><div class="a" id="toastA">コースアウト</div><div class="b" id="toastB">タップでもう一度</div></div>
 
 <div id="title" class="ov">
-  <div class="panel">
-    <div class="bigT">星溝</div>
-    <div class="bigS">HOSHIMIZO</div>
-    <div class="lead">盤を傾けて星の溝をなぞり、星座を灯して月の盃へ。</div>
-    <div class="stages" id="stageCards"></div>
-    <div class="row">
-      <button class="primary" id="bPlay">プレイする</button>
-      <button id="bWatch">お手本を見る</button>
-      <button class="lab" id="bMute2" title="音"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg><span class="l">音 <span class="sw">ON</span></span></button>
-      <button id="bGyro" class="lab" title="スマホの傾きで操作する（ジャイロ）のON／OFF" aria-pressed="true"><svg viewBox="0 0 24 24"><rect x="8.5" y="3.5" width="7" height="12.5" rx="1.6" transform="rotate(-20 12 9.75)"/><path d="M4 18.5q8 4 16 0"/><path d="M17.6 16.7l2.4 1.8-2.8.9"/></svg><span class="l">ジャイロ <span class="sw">ON</span></span></button>
+  <div class="t-top">
+    <div class="t-head">
+      <svg class="t-arc" viewBox="0 0 260 62" aria-hidden="true">
+        <path class="a-main" d="M 6 52 A 250 250 0 0 1 254 12"/>
+        <path class="a-sub" d="M 14 56 A 250 250 0 0 1 248 19"/>
+        <g class="a-ticks">
+          <line x1="36" y1="43" x2="34" y2="37"/><line x1="74" y1="34" x2="72" y2="26"/>
+          <line x1="112" y1="26" x2="111" y2="20"/><line x1="150" y1="20" x2="149" y2="12"/>
+          <line x1="188" y1="16" x2="187" y2="10"/><line x1="224" y1="13" x2="224" y2="6"/>
+        </g>
+        <circle class="a-dot" cx="74" cy="34" r="2.1"/><circle class="a-dot" cx="150" cy="20" r="2.5"/><circle class="a-dot" cx="224" cy="13" r="1.9"/>
+      </svg>
+      <div class="t-titles">
+        <div class="bigT">星溝</div>
+        <div class="bigS">HOSHIMIZO</div>
+      </div>
     </div>
+    <div class="t-tools">
+      <button class="lab t-pill" id="bMute2" title="音"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg><span class="l">音 <span class="sw">ON</span></span></button>
+      <button id="bGyro" class="lab t-pill" title="スマホの傾きで操作する（ジャイロ）のON／OFF" aria-pressed="true"><svg viewBox="0 0 24 24"><rect x="8.5" y="3.5" width="7" height="12.5" rx="1.6" transform="rotate(-20 12 9.75)"/><path d="M4 18.5q8 4 16 0"/><path d="M17.6 16.7l2.4 1.8-2.8.9"/></svg><span class="l">ジャイロ <span class="sw">ON</span></span></button>
+      <button id="bHelp" class="icon t-pill" title="操作ガイド" aria-expanded="false" aria-label="操作ガイド"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.6 2.6 0 0 1 4.9 1.1c0 1.6-2.5 2-2.5 3.6"/><circle cx="12" cy="17.2" r=".8" fill="currentColor" stroke="none"/></svg></button>
+    </div>
+  </div>
+  <div id="helpPop" class="hidden" role="dialog" aria-label="操作ガイド">
+    <div class="hp-head"><span>操作ガイド</span><button id="bHelpClose" class="hp-x" aria-label="閉じる">×</button></div>
     <div class="note"><b>スマホ</b>：プレイ開始で傾きセンサーの許可を求めます。開始時の持ち方が水平になり、そこから前後左右に傾けて操作します（横持ちも可）。「ジャイロ OFF」にすると許可は求めず、右下のスティックで操作します。プレイ中も画面下のボタンで、ジャイロの切り替えと水平合わせができます。<br><b>PC</b>：矢印キー／WASDで傾ける・ドラッグで視点・R でやり直し・C で球を追う・M で消音。</div>
+  </div>
+  <div class="t-dock">
+    <div class="t-meta-bar">
+      <span class="t-cur-num" id="tCurNum">I</span>
+      <span class="t-cur-name" id="tCurName">カシオペヤ</span>
+      <span class="t-cur-en" id="tCurEn">CASSIOPEIA</span>
+      <span class="t-cur-best" id="tCurBest"></span>
+    </div>
+    <div class="t-rail-wrap">
+      <button class="t-nav" id="bStagePrev" aria-label="前のステージ" title="前のステージ"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="stages" id="stageCards" role="listbox" aria-label="ステージ選択"></div>
+      <button class="t-nav" id="bStageNext" aria-label="次のステージ" title="次のステージ"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="t-dots" id="stageDots"></div>
+    <div class="t-actions">
+      <button class="primary t-play" id="bPlay">プレイする</button>
+      <button class="t-watch" id="bWatch">お手本を見る</button>
+    </div>
+    <div class="t-lead">盤を傾けて星の溝をなぞり、星座を灯して月の盃へ</div>
   </div>
 </div>
 
@@ -2051,10 +2189,13 @@ function buildCourse(THREE, def) {
   // 改善1（S9）：穴あき星図板。区間 from〜to は穴の開いた板。穴 { s, u（横の位置）, r（見た目の半径）, rf（落ちる半径＝玉の中心がこれより内側なら落ちる） }。定義が無いステージでは空
   const holePlates = (def.holePlates || []).map(w => ({ ...w, s0: prog2s(w.from), s1: prog2s(w.to), holes: w.holes.map(h => ({ s: prog2s(h.at), u: h.u, r: h.r, rf: h.rf })) }));
   // S10：十字の大天秤。腕の区間 s0〜s1（渡る向きの姿勢で焼き込み）・支点 sHub、分銅の皿 s0〜s1（中心 s）。定義が無いステージでは null
+  // S11：中央の大らせん塔。s0〜s1＝塔と一緒に動く区間（上がり切った姿で焼き込み）、sp0〜sp1＝らせん。定義が無いステージでは null
+  const tower = def.tower ? { ...def.tower, s0: prog2s(def.tower.from), s1: prog2s(def.tower.to), sp0: prog2s(def.tower.s0), sp1: prog2s(def.tower.s1) } : null;
   const balance = def.balance ? { ...def.balance, arms: def.balance.arms.map(a => ({ ...a, s0: prog2s(a.from), s1: prog2s(a.to), sHub: prog2s(a.hub) })), weights: def.balance.weights.map(w => ({ ...w, s: prog2s(w.at), s0: prog2s(w.at) - w.len / 2, s1: prog2s(w.at) + w.len / 2 })) } : null;
+  const slalomPins = (def.slalomPins || []).map((p, i) => ({ ...p, i, s: prog2s(p.at) }));   // S10改修：真鍮ピンの千鳥スラローム
 
   const C = {
-    def, curve, L, M, ds, n, P, T, LA, NR, half, kap, openings, gaps, boosts, shutters, bowls, hidden, lifts, gearTrains, rails2, railD, wheels, bridges, rivers, trapdoors, holePlates, balance,
+    def, curve, L, M, ds, n, P, T, LA, NR, half, kap, openings, gaps, boosts, shutters, bowls, hidden, lifts, gearTrains, rails2, railD, wheels, bridges, rivers, trapdoors, holePlates, balance, tower, slalomPins,
     // 改善1：(s, u) の床が開いているか（開いた落とし戸の板の中・穴の中）。落ちている玉を、その床で跳ね返さないため。落とし戸・穴の無いステージでは常に false
     floorOpen(s, u) {
       for (const w of trapdoors) if (s > w.s0 && s < w.s1) for (const p of w.pans) if (s > p.a && s < p.b && trapC(w, p.k) > 0.02) return true;
@@ -2119,7 +2260,9 @@ const S8_STAGE = {"id":8,"name":"春の大三角","en":"SPRING TRIANGLE","level"
 // 追加ステージ9「夏の大三角」（tools/gen-s9.mjs が書き出したもの）。wheels＝星汲みホイール（ret＝乗り損ねの戻り溝）、bridges＝カササギの開閉ブリッジ、river＝機械の天の川（銀ローラー）、railGaps＝上端レールを描かない所（見た目だけ）
 const S9_STAGE = {"id":9,"name":"夏の大三角","en":"SUMMER TRIANGLE","level":"★★★★★★★★★","introMsg":"夏の大三角 ― 3つの星をなぞる","board":{"w":15.15,"d":9.9},"theme":"summer","fullLateral":true,"points":[[-6.375,0.66,3.75],[-6.375,0.7,3.397],[-6.375,0.741,3.044],[-6.375,0.785,2.655],[-6.375,0.829,2.27],[-6.375,0.851,1.883],[-6.375,0.824,1.531],[-6.375,0.794,1.15],[-6.381,0.765,0.773],[-6.371,0.739,0.407],[-6.255,0.734,0.074],[-5.974,0.729,-0.151],[-5.616,0.724,-0.191],[-5.292,0.719,-0.034],[-5.103,0.713,0.266],[-5.067,0.708,0.618],[-5.072,0.703,0.991],[-5.075,0.695,1.359],[-5.075,0.684,1.721],[-5.075,0.672,2.081],[-5.075,0.66,2.455],[-5.076,0.648,2.838],[-5.062,0.639,3.212],[-4.909,0.637,3.533],[-4.605,0.634,3.724],[-4.245,0.632,3.724],[-3.941,0.629,3.533],[-3.789,0.627,3.218],[-3.767,0.624,2.855],[-3.774,0.621,2.474],[-3.779,0.619,2.097],[-3.783,0.616,1.718],[-3.747,0.614,1.365],[-3.558,0.613,1.066],[-3.234,0.611,0.909],[-2.876,0.61,0.949],[-2.595,0.608,1.174],[-2.479,0.607,1.507],[-2.467,0.605,1.88],[-2.474,0.603,2.269],[-2.48,0.602,2.646],[-2.481,0.6,3.005],[-2.426,0.599,3.349],[-2.201,0.598,3.63],[-1.861,0.596,3.749],[-1.511,0.595,3.669],[-1.256,0.593,3.414],[-1.173,0.592,3.072],[-1.168,0.59,2.707],[-1.175,0.589,2.329],[-1.179,0.587,1.961],[-1.183,0.586,1.594],[-1.148,0.584,1.222],[-0.94,0.582,0.912],[-0.619,0.579,0.779],[-0.248,0.577,0.853],[-0.003,0.575,1.098],[0.079,0.572,1.458],[0.082,0.57,1.834],[0.075,0.568,2.211],[0.07,0.565,2.581],[0.067,0.563,2.941],[0.112,0.561,3.317],[0.319,0.559,3.608],[0.641,0.556,3.743],[0.995,0.554,3.736],[1.377,0.552,3.69],[1.667,0.55,3.663],[2.051,0.572,3.652],[2.442,0.595,3.65],[2.82,0.617,3.649],[3.172,0.638,3.649],[3.529,0.659,3.65],[3.886,0.68,3.65],[4.249,0.701,3.65],[4.611,0.722,3.65],[4.966,0.743,3.65],[5.351,0.765,3.656],[5.72,0.787,3.66],[6.096,0.809,3.636],[6.408,0.829,3.484],[6.597,0.85,3.185],[6.633,0.873,2.805],[6.628,0.894,2.442],[6.625,0.915,2.08],[6.625,0.936,1.72],[6.625,0.957,1.359],[6.632,0.98,0.971],[6.625,1.001,0.6],[6.525,1.023,0.255],[6.256,1.044,0.014],[5.886,1.066,-0.056],[5.494,1.089,-0.056],[5.105,1.112,-0.05],[4.745,1.133,-0.042],[4.389,1.153,-0.035],[4.016,1.176,-0.102],[3.667,1.198,-0.26],[3.344,1.221,-0.473],[3.085,1.241,-0.717],[2.839,1.263,-0.987],[2.584,1.284,-1.236],[2.326,1.305,-1.485],[2.025,1.326,-1.7],[1.656,1.349,-1.815],[1.279,1.371,-1.849],[0.929,1.394,-1.701],[0.741,1.416,-1.376],[0.717,1.438,-0.999],[0.722,1.458,-0.648],[0.724,1.471,-0.292],[0.726,1.474,0.086],[0.728,1.476,0.467],[0.756,1.479,0.823],[0.96,1.481,1.126],[1.325,1.484,1.25],[1.679,1.486,1.247],[2.055,1.489,1.296],[2.324,1.491,1.517],[2.425,1.494,1.85],[2.324,1.496,2.183],[2.055,1.498,2.404],[1.686,1.5,2.456],[1.325,1.5,2.45],[0.947,1.5,2.45],[0.56,1.5,2.45],[0.195,1.5,2.45],[-0.167,1.5,2.45],[-0.527,1.5,2.45],[-0.878,1.503,2.453],[-1.257,1.507,2.446],[-1.629,1.512,2.369],[-1.863,1.517,2.115],[-1.931,1.522,1.756],[-1.929,1.526,1.395],[-1.925,1.535,1.021],[-1.925,1.56,0.667],[-1.925,1.584,0.312],[-1.925,1.611,-0.068],[-1.925,1.637,-0.45],[-1.919,1.664,-0.833],[-1.92,1.688,-1.187],[-1.994,1.715,-1.559],[-2.218,1.739,-1.832],[-2.544,1.764,-1.967],[-2.895,1.789,-1.932],[-3.187,1.813,-1.737],[-3.35,1.837,-1.432],[-3.382,1.844,-1.056],[-3.375,1.83,-0.62],[-3.587,2.134,-0.411],[-3.944,2.443,-0.354],[-4.266,2.743,-0.407],[-3.904,3.057,-0.466],[-3.545,3.367,-0.516],[-3.375,3.63,-0.7],[-3.368,3.627,-1.083],[-3.38,3.625,-1.446],[-3.524,3.622,-1.796],[-3.849,3.619,-1.985],[-4.201,3.617,-1.999],[-4.566,3.614,-1.977],[-4.931,3.612,-1.968],[-5.324,3.609,-1.96],[-5.684,3.606,-1.974],[-6.006,3.604,-2.112],[-6.211,3.6,-2.574],[-6.223,3.597,-2.931],[-6.198,3.593,-3.312],[-6.03,3.59,-3.638],[-5.706,3.587,-3.806],[-5.319,3.583,-3.838],[-4.932,3.58,-3.846],[-4.557,3.576,-3.853],[-4.194,3.573,-3.865],[-3.832,3.57,-3.862],[-3.483,3.567,-3.823],[-3.109,3.563,-3.741],[-2.737,3.557,-3.639],[-2.398,3.529,-3.539],[-2.061,3.5,-3.423],[-1.733,3.472,-3.292],[-1.408,3.444,-3.153],[-1.1,3.416,-2.988],[-0.824,3.388,-2.772],[-0.574,3.36,-2.508],[-0.365,3.331,-2.217],[-0.216,3.303,-1.898],[-0.12,3.274,-1.553],[-0.011,3.246,-1.213],[0.116,3.217,-0.875],[0.266,3.189,-0.554],[0.512,3.159,-0.263],[0.806,3.13,-0.055],[1.125,3.102,0.1],[1.468,3.074,0.18],[1.823,3.045,0.22],[2.17,3.017,0.299],[2.513,2.988,0.403],[2.857,2.957,0.582],[3.135,2.929,0.806],[3.399,2.898,1.088],[3.611,2.868,1.407],[3.811,2.837,1.742],[3.986,2.808,2.058],[4.078,2.8,2.418],[4.288,2.8,2.697],[4.635,2.8,2.84],[5.015,2.8,2.864],[5.375,2.8,2.865],[5.75,2.8,2.845],[6.081,2.8,2.73],[6.306,2.8,2.449],[6.361,2.8,2.104],[6.356,2.8,1.716],[6.355,2.8,1.341],[6.355,2.8,0.963],[6.355,2.8,0.61],[6.355,2.8,0.25],[6.364,2.8,-0.111],[6.359,2.8,-0.463],[6.286,2.8,-0.841],[6.205,2.8,-1.213],[6.144,2.8,-1.59],[6.09,2.83,-1.936],[5.987,2.878,-2.306],[5.794,2.923,-2.604],[5.535,2.967,-2.841],[5.225,3.011,-3.008],[4.88,3.055,-3.091],[4.53,3.099,-3.086],[4.189,3.144,-2.993],[3.883,3.188,-2.818],[3.632,3.232,-2.574],[3.447,3.276,-2.271],[3.345,3.321,-1.934],[3.33,3.365,-1.584],[3.404,3.409,-1.236],[3.562,3.453,-0.923],[3.791,3.497,-0.657],[4.084,3.542,-0.456],[4.413,3.586,-0.336],[4.763,3.63,-0.301],[5.114,3.674,-0.356],[5.435,3.718,-0.494],[5.715,3.763,-0.71],[5.931,3.807,-0.99],[6.074,3.855,-1.346],[6.125,3.9,-1.7],[6.151,3.918,-2.087],[6.165,3.935,-2.45],[6.186,3.951,-2.808],[6.204,3.968,-3.162],[6.216,3.985,-3.537],[6.212,4,-3.861],[6.082,4.001,-4.204],[5.771,4.002,-4.373],[5.398,4.003,-4.386],[5.009,4.004,-4.374],[4.625,4.005,-4.36],[4.269,4.006,-4.364],[3.918,4.007,-4.365],[3.546,4.008,-4.311],[3.194,4.009,-4.201],[2.875,4.01,-4],[2.696,4.011,-3.69],[2.583,4.012,-3.327],[2.474,4.013,-2.967],[2.205,4.014,-2.746],[1.858,4.015,-2.712],[1.551,4.016,-2.876],[1.393,4.017,-3.183],[1.329,4.018,-3.53],[1.108,4.019,-3.799],[0.775,4.02,-3.9]],"half":0.51,"demoSpeed":2.3,"checkpointEvery":2.6,"startS":0.42,"palette":{"deck":["#0f1624","#0a0f19","#05070d"],"bg":["#263a5e","#16243f","#0b1528","#040810"]},"stars":[67,166,254],"starNames":["α アルタイル","α ベガ","α デネブ"],"lines":[[0,1],[1,2],[2,0]],"shutters":[{"at":0.0603,"period":2.6,"open":1.5,"phase":0},{"at":0.0756,"period":2.6,"open":1.5,"phase":-0.42}],"widths":[{"from":0.6661,"to":0.6756,"half":0.68},{"from":0.6889,"to":0.6984,"half":0.4},{"from":0.7117,"to":0.7212,"half":0.68},{"from":0.7344,"to":0.742,"half":0.42},{"from":0.258,"to":0.2805,"half":0.8,"ramp":0.5}],"openings":[{"side":-1,"from":0.0363,"to":0.0492},{"side":1,"from":0.0828,"to":0.0957},{"side":-1,"from":0.8493,"to":0.8621}],"gates":[0.2427,0.611,0.9278],"gateNoFeet":[1,2],"relays":[0.2511,0.5761,0.6172,0.7548],"relaySides":[1,-1,1,-1],"banks":[{"from":0.0358,"to":0.0497,"deg":8},{"from":0.0823,"to":0.0961,"deg":8},{"from":0.8238,"to":0.9016,"deg":6}],"towers":[{"x":4.725,"z":-1.7,"r":0.27,"top":4.52,"from":0.8188,"to":0.9066,"dir":"up","ring":1.4}],"wheels":[{"name":"星汲みホイール","x":-3.375,"z":-0.4,"R":0.9,"yc":2.945,"zb":-0.54,"buckets":4,"interval":1.5,"phase":0.35,"from":0.5423,"to":0.5692,"relay":1,"ret":{"half":0.3,"pts":[[-3.375,1.63,0.12],[-3.351,1.627,0.18],[-3.32,1.624,0.266],[-3.282,1.619,0.366],[-3.236,1.615,0.468],[-3.184,1.61,0.561],[-3.123,1.606,0.635],[-3.049,1.602,0.698],[-2.966,1.598,0.755],[-2.881,1.594,0.808],[-2.798,1.59,0.862],[-2.725,1.586,0.92],[-2.657,1.582,0.997],[-2.597,1.577,1.085],[-2.54,1.573,1.17],[-2.484,1.569,1.236],[-2.425,1.566,1.27],[-2.339,1.563,1.25],[-2.246,1.558,1.182],[-2.163,1.553,1.103],[-2.105,1.55,1.05]],"to":0.4901,"side":-1}}],"bridges":[{"name":"カササギの橋1","from":0.4523,"to":0.4671,"period":3,"closed":1.6,"move":0.35,"phase":0},{"name":"カササギの橋2","from":0.7919,"to":0.8067,"period":3,"closed":1.6,"move":0.35,"phase":1.1}],"river":[{"from":0.6547,"to":0.7496}],"railGaps":[{"side":-1,"from":0.4827,"to":0.4911}],"holePlates":[{"name":"穴あき星図板","from":0.2531,"to":0.2855,"vDemo":1,"holes":[{"at":0.26,"u":0,"r":0.22,"rf":0.16},{"at":0.2694,"u":-0.4,"r":0.22,"rf":0.16},{"at":0.2694,"u":0.4,"r":0.22,"rf":0.16},{"at":0.2788,"u":0,"r":0.22,"rf":0.16}]}],"ornaments":{"medallions":true,"grand":true}};
 // 追加ステージ10「秋の四辺形」（tools/gen-s10.mjs が書き出したもの）。balance＝十字の大天秤（arms＝腕：from〜to の区間は渡る向き trav の姿勢で焼き込み、hub＝支点、swing＝向きの切り替えで回る角度／weights＝分銅：at の皿に乗ると向き set にする／init＝最初の向き）
-const S10_STAGE = {"id":10,"name":"秋の四辺形","en":"GREAT SQUARE OF PEGASUS","level":"★★★★★★★★★★","introMsg":"秋の四辺形 ― 4つの星をなぞる","board":{"w":15.15,"d":9.9},"theme":"autumn","fullLateral":true,"points":[[-0.275,0.64,2.8],[-0.633,0.638,2.8],[-0.992,0.636,2.8],[-1.352,0.634,2.8],[-1.709,0.632,2.8],[-2.067,0.63,2.8],[-2.457,0.628,2.8],[-2.816,0.626,2.8],[-3.2,0.624,2.8],[-3.574,0.621,2.795],[-3.93,0.619,2.794],[-4.306,0.617,2.864],[-4.575,0.615,3.105],[-4.675,0.613,3.45],[-4.775,0.611,3.795],[-5.044,0.609,4.036],[-5.4,0.607,4.105],[-5.753,0.605,4.043],[-6.003,0.603,3.793],[-6.063,0.601,3.42],[-6.06,0.6,3.267],[-6.06,0.629,2.911],[-6.06,0.659,2.54],[-6.065,0.689,2.17],[-6.069,0.719,1.796],[-6.04,0.748,1.447],[-5.87,0.777,1.14],[-5.558,0.806,0.97],[-5.18,0.837,0.947],[-4.797,0.868,0.954],[-4.444,0.897,0.886],[-4.175,0.927,0.645],[-4.075,0.957,0.3],[-4.175,0.986,-0.045],[-4.444,1.016,-0.286],[-4.792,1.045,-0.354],[-5.144,1.073,-0.351],[-5.529,1.104,-0.35],[-5.911,1.134,-0.349],[-6.296,1.165,-0.358],[-6.625,1.194,-0.492],[-6.832,1.223,-0.784],[-6.876,1.248,-1.138],[-6.87,1.271,-1.512],[-6.873,1.293,-1.888],[-6.877,1.317,-2.278],[-6.851,1.338,-2.632],[-6.673,1.36,-2.945],[-6.349,1.382,-3.116],[-5.983,1.405,-3.082],[-5.757,1.42,-2.97],[-5.419,1.382,-2.792],[-5.1,1.345,-2.623],[-4.779,1.309,-2.454],[-4.436,1.27,-2.273],[-4.114,1.234,-2.103],[-3.777,1.199,-1.925],[-3.434,1.17,-1.744],[-3.111,1.142,-1.573],[-2.785,1.114,-1.401],[-2.461,1.087,-1.23],[-2.148,1.06,-1.065],[-1.835,1.033,-0.9],[-1.523,1.006,-0.735],[-1.21,0.98,-0.57],[-0.897,0.953,-0.405],[-0.515,0.92,-0.203],[-0.202,0.893,-0.038],[0.11,0.866,0.127],[0.423,0.84,0.292],[0.736,0.813,0.457],[1.048,0.786,0.622],[1.361,0.759,0.787],[1.682,0.732,0.956],[2.01,0.704,1.129],[2.403,0.67,1.337],[2.737,0.641,1.513],[3.046,0.628,1.68],[3.382,0.626,1.808],[3.743,0.625,1.823],[4.087,0.624,1.716],[4.374,0.623,1.499],[4.572,0.621,1.198],[4.653,0.62,0.85],[4.662,0.619,0.482],[4.657,0.618,0.093],[4.651,0.617,-0.263],[4.651,0.616,-0.643],[4.69,0.615,-1],[4.893,0.614,-1.321],[5.204,0.614,-1.482],[5.554,0.613,-1.472],[5.855,0.612,-1.295],[6.038,0.611,-0.966],[6.07,0.61,-0.614],[6.069,0.609,-0.252],[6.062,0.608,0.1],[6.06,0.607,0.469],[6.06,0.606,0.826],[6.06,0.605,1.179],[6.06,0.604,1.532],[6.06,0.603,1.899],[6.06,0.603,2.257],[6.06,0.602,2.614],[6.06,0.601,2.976],[6.06,0.6,3.267],[6.065,0.608,3.628],[5.999,0.616,3.998],[5.739,0.624,4.273],[5.378,0.632,4.354],[4.999,0.639,4.351],[4.62,0.647,4.35],[4.266,0.655,4.35],[3.908,0.674,4.35],[3.547,0.716,4.35],[3.183,0.759,4.35],[2.826,0.8,4.35],[2.475,0.841,4.35],[2.086,0.887,4.35],[1.706,0.931,4.35],[1.352,0.973,4.35],[0.972,1.017,4.35],[0.584,1.063,4.35],[0.222,1.105,4.35],[-0.136,1.147,4.35],[-0.486,1.188,4.35],[-0.836,1.229,4.35],[-1.186,1.27,4.35],[-1.536,1.311,4.35],[-1.888,1.352,4.35],[-2.242,1.393,4.35],[-2.594,1.435,4.35],[-2.975,1.479,4.35],[-3.338,1.522,4.35],[-3.691,1.563,4.35],[-4.051,1.605,4.35],[-4.417,1.648,4.352],[-4.772,1.689,4.357],[-5.125,1.731,4.361],[-5.498,1.774,4.358],[-5.855,1.816,4.308],[-6.147,1.859,4.073],[-6.251,1.901,3.713],[-6.127,1.944,3.358],[-5.847,1.987,3.124],[-5.527,2.033,2.915],[-5.23,2.076,2.729],[-4.904,2.122,2.528],[-4.574,2.169,2.326],[-4.26,2.213,2.135],[-3.958,2.256,1.95],[-3.659,2.271,1.764],[-3.312,2.24,1.547],[-3.003,2.212,1.354],[-2.691,2.184,1.158],[-2.38,2.157,0.964],[-2.08,2.13,0.776],[-1.781,2.103,0.589],[-1.481,2.076,0.401],[-1.181,2.05,0.214],[-0.881,2.023,0.026],[-0.515,1.99,-0.203],[-0.215,1.963,-0.391],[0.084,1.936,-0.578],[0.384,1.91,-0.766],[0.684,1.883,-0.954],[0.983,1.856,-1.141],[1.283,1.829,-1.329],[1.59,1.802,-1.521],[1.905,1.774,-1.718],[2.282,1.74,-1.954],[2.597,1.712,-2.151],[2.907,1.686,-2.345],[3.222,1.662,-2.54],[3.549,1.638,-2.743],[3.886,1.612,-2.952],[4.204,1.588,-3.15],[4.525,1.563,-3.353],[4.697,1.55,-3.465],[4.914,1.569,-3.742],[4.905,1.588,-4.095],[4.673,1.606,-4.36],[4.322,1.631,-4.428],[3.935,1.676,-4.428],[3.569,1.718,-4.426],[3.196,1.762,-4.426],[2.84,1.803,-4.426],[2.471,1.846,-4.426],[2.104,1.888,-4.426],[1.749,1.929,-4.426],[1.393,1.97,-4.426],[1.038,2.011,-4.426],[0.683,2.052,-4.426],[0.328,2.093,-4.426],[-0.028,2.134,-4.426],[-0.383,2.176,-4.426],[-0.738,2.217,-4.426],[-1.093,2.258,-4.426],[-1.445,2.298,-4.426],[-1.796,2.339,-4.426],[-2.152,2.38,-4.426],[-2.514,2.422,-4.426],[-2.895,2.466,-4.43],[-3.26,2.508,-4.435],[-3.616,2.55,-4.439],[-3.968,2.59,-4.438],[-4.35,2.634,-4.411],[-4.685,2.675,-4.235],[-4.858,2.714,-3.921],[-4.838,2.754,-3.561],[-4.631,2.793,-3.268],[-4.311,2.831,-3.135],[-3.947,2.872,-3.115],[-3.582,2.913,-3.118],[-3.23,2.953,-3.124],[-2.861,2.995,-3.126],[-2.472,3.04,-3.126],[-2.114,3.08,-3.126],[-1.753,3.121,-3.126],[-1.396,3.162,-3.126],[-1.039,3.203,-3.126],[-0.682,3.243,-3.126],[-0.327,3.284,-3.126],[0.025,3.324,-3.126],[0.381,3.364,-3.126],[0.735,3.405,-3.126],[1.122,3.449,-3.126],[1.51,3.493,-3.126],[1.865,3.533,-3.131],[2.255,3.578,-3.137],[2.625,3.62,-3.126],[2.97,3.663,-3.026],[3.211,3.706,-2.757],[3.28,3.748,-2.41],[3.286,3.793,-2.027],[3.255,3.838,-1.649],[3.085,3.88,-1.34],[2.778,3.922,-1.173],[2.428,3.962,-1.124],[2.054,4.003,-1.079],[1.689,4.042,-0.986],[1.385,4.064,-0.814],[1.087,4.085,-0.611],[0.767,4.1,-0.459],[0.427,4.1,-0.364],[0.077,4.1,-0.288],[-0.155,4.1,-0.233]],"half":0.51,"demoSpeed":2.2,"checkpointEvery":2.6,"startS":0.42,"palette":{"deck":["#1f130d","#140c08","#0a0604"],"bg":["#5a3a26","#33200f","#1a0f08","#0a0604"]},"stars":[20,50,105,178],"starNames":["α マルカブ","β シェアト","γ アルゲニブ","α アルフェラッツ"],"lines":[[0,1],[1,3],[3,2],[2,0]],"widths":[{"from":0.1718,"to":0.1799,"half":0.33,"ramp":0.6},{"from":0.1872,"to":0.1944,"half":0.33,"ramp":0.6},{"from":0.3411,"to":0.3501,"half":0.34,"ramp":0.6},{"from":0.3796,"to":0.3872,"half":0.32,"ramp":0.6},{"from":0.4126,"to":0.419,"half":0.34,"ramp":0.6},{"from":0.4976,"to":0.5088,"half":0.35,"ramp":0.6},{"from":0.7752,"to":0.7866,"half":0.35,"ramp":0.6}],"openings":[{"side":-1,"from":0.1724,"to":0.178},{"side":1,"from":0.1819,"to":0.1872},{"side":-1,"from":0.1914,"to":0.1961},{"side":1,"from":0.3431,"to":0.349},{"side":-1,"from":0.3543,"to":0.3598},{"side":-1,"from":0.3808,"to":0.3866},{"side":1,"from":0.3905,"to":0.3964},{"side":-1,"from":0.4137,"to":0.419},{"side":-1,"from":0.4987,"to":0.504},{"side":1,"from":0.5071,"to":0.5119},{"side":1,"from":0.7766,"to":0.7813},{"side":-1,"from":0.7849,"to":0.7894}],"gates":[0.0795,0.2014,0.4254,0.7244],"gateNoFeet":[0,1,3],"relays":[0.0879,0.1456,0.2078,0.3138,0.4686,0.7495],"relaySides":[1,-1,1,-1,1,-1],"balance":{"init":"B","swingT":1.6,"arms":[{"id":"A","name":"腕A","from":0.231,"to":0.3049,"hub":0.2678,"trav":"A","swing":0.1512},{"id":"B","name":"腕B","from":0.6187,"to":0.6926,"hub":0.6558,"trav":"B","swing":0.1512}],"weights":[{"at":0.2145,"len":0.5,"set":"A"},{"at":0.4572,"len":0.5,"set":"B"}],"hubXZ":[-0.515,-0.203],"hubY":[0.92,1.99]},"ornaments":{"medallions":true,"grand":true}};
+const S10_STAGE = {"id":10,"name":"秋の四辺形","en":"GREAT SQUARE OF PEGASUS","level":"★★★★★★★★★★","introMsg":"秋の四辺形 ― 冠から下り、天秤を操る","board":{"w":15.15,"d":9.9},"theme":"autumn","fullLateral":true,"points":[[-0.415,4.2,-0.233],[-0.041,4.185,-0.332],[0.297,4.172,-0.438],[0.623,4.146,-0.603],[0.947,4.118,-0.796],[1.305,4.093,-0.923],[1.68,4.071,-0.981],[1.913,4.051,-1.235],[1.981,4.029,-1.609],[1.96,4.008,-1.99],[1.799,3.987,-2.324],[1.462,3.965,-2.49],[1.101,3.942,-2.507],[0.719,3.918,-2.5],[0.35,3.894,-2.5],[-0.009,3.871,-2.5],[-0.376,3.847,-2.5],[-0.731,3.825,-2.5],[-1.084,3.802,-2.5],[-1.436,3.779,-2.5],[-1.786,3.757,-2.5],[-2.136,3.734,-2.5],[-2.523,3.709,-2.5],[-2.909,3.685,-2.5],[-3.277,3.661,-2.497],[-3.629,3.638,-2.491],[-3.997,3.615,-2.489],[-4.352,3.593,-2.514],[-4.684,3.575,-2.634],[-4.946,3.555,-2.896],[-5.072,3.536,-3.244],[-5.04,3.516,-3.613],[-4.855,3.497,-3.933],[-4.552,3.477,-4.145],[-4.197,3.459,-4.213],[-3.845,3.442,-4.222],[-3.46,3.423,-4.216],[-3.109,3.406,-4.21],[-2.721,3.387,-4.21],[-2.371,3.37,-4.21],[-2.017,3.353,-4.21],[-1.664,3.336,-4.21],[-1.305,3.318,-4.21],[-0.945,3.301,-4.21],[-0.585,3.283,-4.21],[-0.225,3.266,-4.21],[0.126,3.249,-4.208],[0.478,3.232,-4.203],[0.829,3.215,-4.203],[1.215,3.196,-4.212],[1.576,3.178,-4.232],[1.934,3.161,-4.261],[2.285,3.144,-4.292],[2.638,3.127,-4.326],[3,3.109,-4.369],[3.35,3.092,-4.409],[3.703,3.075,-4.431],[4.057,3.058,-4.434],[4.421,3.04,-4.426],[4.752,3.019,-4.306],[4.932,2.997,-4.003],[4.876,2.976,-3.655],[4.697,2.96,-3.465],[4.374,2.939,-3.263],[4.058,2.918,-3.065],[3.741,2.905,-2.867],[3.413,2.898,-2.662],[3.086,2.89,-2.457],[2.763,2.874,-2.255],[2.437,2.854,-2.051],[2.07,2.82,-1.821],[1.761,2.791,-1.628],[1.451,2.763,-1.434],[1.146,2.734,-1.243],[0.84,2.706,-1.051],[0.536,2.678,-0.861],[0.231,2.649,-0.67],[-0.074,2.621,-0.479],[-0.379,2.593,-0.288],[-0.515,2.58,-0.203],[-0.82,2.552,-0.012],[-1.125,2.523,0.179],[-1.43,2.495,0.37],[-1.735,2.467,0.56],[-2.04,2.438,0.751],[-2.344,2.41,0.941],[-2.655,2.381,1.136],[-2.953,2.354,1.322],[-3.1,2.34,1.415],[-3.408,2.311,1.607],[-3.718,2.287,1.801],[-4.037,2.266,2.001],[-4.344,2.246,2.188],[-4.649,2.226,2.374],[-4.973,2.204,2.572],[-5.287,2.184,2.766],[-5.588,2.164,2.958],[-5.897,2.146,3.183],[-6.082,2.135,3.513],[-6.059,2.124,3.868],[-5.854,2.113,4.157],[-5.496,2.101,4.295],[-5.113,2.087,4.309],[-4.733,2.073,4.303],[-4.364,2.059,4.3],[-3.979,2.044,4.3],[-3.619,2.031,4.3],[-3.255,2.017,4.3],[-2.892,2.003,4.3],[-2.516,1.989,4.3],[-2.148,1.975,4.3],[-1.775,1.96,4.3],[-1.402,1.946,4.3],[-1.016,1.932,4.3],[-0.627,1.918,4.3],[-0.272,1.907,4.3],[0.082,1.895,4.3],[0.437,1.883,4.3],[0.825,1.87,4.3],[1.177,1.858,4.3],[1.537,1.847,4.3],[1.918,1.834,4.3],[2.276,1.823,4.3],[2.644,1.811,4.3],[3.004,1.799,4.3],[3.361,1.787,4.3],[3.717,1.775,4.3],[4.07,1.764,4.3],[4.436,1.752,4.302],[4.789,1.74,4.308],[5.159,1.728,4.31],[5.532,1.717,4.286],[5.843,1.706,4.134],[6.033,1.696,3.832],[6.064,1.686,3.471],[6.06,1.68,3.267],[6.06,1.675,2.898],[6.06,1.669,2.533],[6.06,1.664,2.146],[6.06,1.658,1.777],[6.06,1.653,1.391],[6.06,1.647,1.003],[6.06,1.642,0.647],[6.061,1.636,0.29],[6.067,1.631,-0.098],[6.071,1.625,-0.475],[6.06,1.62,-0.83],[5.959,1.616,-1.181],[5.686,1.612,-1.425],[5.327,1.608,-1.486],[4.988,1.604,-1.345],[4.778,1.6,-1.05],[4.732,1.596,-0.675],[4.732,1.592,-0.311],[4.739,1.588,0.08],[4.74,1.584,0.443],[4.74,1.58,0.801],[4.741,1.576,1.187],[4.745,1.572,1.565],[4.698,1.566,1.931],[4.433,1.559,2.195],[4.068,1.552,2.207],[3.745,1.546,2.052],[3.414,1.541,1.871],[3.1,1.537,1.705],[2.759,1.53,1.525],[2.419,1.51,1.345],[2.094,1.48,1.174],[1.77,1.45,1.003],[1.446,1.42,0.832],[1.129,1.391,0.665],[0.812,1.362,0.497],[0.499,1.333,0.332],[0.185,1.304,0.166],[-0.13,1.275,0],[-0.515,1.24,-0.203],[-0.83,1.211,-0.37],[-1.145,1.182,-0.536],[-1.46,1.153,-0.702],[-1.773,1.124,-0.867],[-2.088,1.095,-1.034],[-2.404,1.066,-1.2],[-2.729,1.036,-1.372],[-3.124,1,-1.58],[-3.439,0.971,-1.746],[-3.769,0.949,-1.921],[-4.11,0.935,-2.1],[-4.452,0.926,-2.281],[-4.762,0.92,-2.445],[-5.094,0.913,-2.62],[-5.404,0.907,-2.784],[-5.757,0.9,-2.97],[-6.109,0.885,-3.113],[-6.472,0.869,-3.061],[-6.748,0.855,-2.821],[-6.852,0.839,-2.47],[-6.859,0.825,-2.105],[-6.853,0.809,-1.715],[-6.856,0.794,-1.339],[-6.848,0.776,-0.958],[-6.732,0.744,-0.624],[-6.451,0.711,-0.399],[-6.104,0.679,-0.344],[-5.717,0.644,-0.35],[-5.359,0.628,-0.355],[-4.988,0.614,-0.358],[-4.608,0.6,-0.313],[-4.317,0.586,-0.106],[-4.179,0.572,0.228],[-4.239,0.559,0.581],[-4.48,0.55,0.85],[-4.825,0.541,0.95],[-5.175,0.532,0.95],[-5.561,0.522,0.975],[-5.87,0.513,1.14],[-6.04,0.504,1.448],[-6.068,0.494,1.832],[-6.062,0.485,2.197],[-6.061,0.473,2.559],[-6.065,0.456,2.928],[-6.06,0.44,3.267],[-6.045,0.414,3.633],[-5.873,0.388,3.963],[-5.55,0.363,4.098],[-5.186,0.355,4.079],[-4.865,0.348,3.91],[-4.697,0.342,3.595],[-4.637,0.336,3.235],[-4.431,0.33,2.942],[-4.107,0.324,2.809],[-3.743,0.318,2.792],[-3.361,0.311,2.799],[-3.005,0.307,2.8],[-2.641,0.304,2.8],[-2.275,0.3,2.8],[-1.914,0.296,2.8],[-1.553,0.292,2.8],[-1.195,0.289,2.8],[-0.838,0.285,2.8],[-0.483,0.282,2.8],[-0.325,0.28,2.8]],"half":0.51,"demoSpeed":2.2,"checkpointEvery":2.6,"startS":0.42,"palette":{"deck":["#1f130d","#140c08","#0a0604"],"bg":["#5a3a26","#33200f","#1a0f08","#0a0604"]},"stars":[62,135,191,220],"starNames":["α アルフェラッツ","γ アルゲニブ","β シェアト","α マルカブ"],"lines":[[0,1],[1,3],[3,2],[2,0]],"widths":[{"from":0.0552,"to":0.1007,"half":0.68,"ramp":0.5},{"from":0.1558,"to":0.2067,"half":0.66,"ramp":0.5},{"from":0.2697,"to":0.2777,"half":0.78,"ramp":0.35},{"from":0.4315,"to":0.459,"half":0.46,"ramp":0.55},{"from":0.5013,"to":0.5276,"half":0.46,"ramp":0.55},{"from":0.5756,"to":0.5999,"half":0.34,"ramp":0.55},{"from":0.6385,"to":0.6577,"half":0.32,"ramp":0.55},{"from":0.6754,"to":0.6826,"half":0.76,"ramp":0.34},{"from":0.712,"to":0.7464,"half":0.35,"ramp":0.62}],"banks":[{"from":0.4327,"to":0.4578,"deg":5.5,"sign":1},{"from":0.5024,"to":0.5265,"deg":5.5,"sign":-1},{"from":0.8656,"to":0.8805,"deg":7}],"openings":[{"side":1,"from":0.4344,"to":0.4561},{"side":-1,"from":0.5041,"to":0.5247},{"side":-1,"from":0.5791,"to":0.5848},{"side":1,"from":0.5894,"to":0.5991},{"side":1,"from":0.642,"to":0.6503},{"side":-1,"from":0.6538,"to":0.6593},{"side":1,"from":0.6741,"to":0.6837},{"side":1,"from":0.7115,"to":0.7195},{"side":-1,"from":0.7255,"to":0.7335},{"side":1,"from":0.7389,"to":0.7464}],"openingTags":["cant","cant","narrow","narrow","narrow","narrow","weight2","armB","armB","armB"],"slalomPins":[{"at":0.0586,"side":-1,"len":0.48,"r":0.042},{"at":0.0764,"side":1,"len":0.48,"r":0.042},{"at":0.0941,"side":-1,"len":0.48,"r":0.042},{"at":0.161,"side":1,"len":0.46,"r":0.042},{"at":0.1799,"side":-1,"len":0.46,"r":0.042},{"at":0.1987,"side":1,"len":0.46,"r":0.042}],"inclinometers":[{"x":-1.25,"z":-3.35,"y":2.75,"axis":"z","label":"北スラローム"},{"x":1.55,"z":3.1,"y":1.65,"axis":"z","label":"南カント"},{"x":3.15,"z":-0.25,"y":1.5,"axis":"x","label":"東細溝"},{"x":-3,"z":0,"y":1.15,"axis":"x","label":"中央天秤"}],"gates":[0.2576,0.5591,0.797,0.9194],"gateNoFeet":[0,2],"relays":[0.2634,0.3752,0.4801,0.5668,0.6706,0.8141],"relaySides":[1,-1,1,-1,1,-1],"balance":{"init":"B","swingT":1.6,"arms":[{"id":"A","name":"腕A","from":0.2931,"to":0.3632,"hub":0.328,"trav":"A","swing":0.1571},{"id":"B","name":"腕B","from":0.6952,"to":0.7629,"hub":0.7292,"trav":"B","swing":0.1624}],"weights":[{"at":0.2737,"len":0.72,"set":"A","pocket":{"side":-1,"uMin":0.22,"uTarget":0.44,"holdT":0.5}},{"at":0.6789,"len":0.72,"set":"B","pocket":{"side":-1,"uMin":0.22,"uTarget":0.42,"holdT":0.5,"openOpp":true}}],"hubXZ":[-0.515,-0.203],"hubY":[2.58,1.24],"crownH":3.94},"ornaments":{"medallions":true,"grand":true}};
+// 追加ステージ11「冬の大三角」（tools/gen-s11.mjs が書き出したもの）。tower＝中央の大らせん塔（from〜to の区間はせり上がった姿で焼き込み、dH 沈んだ所から 3 つのゲートで上がる）／pins＝らせんのピン（音階）／gateGrow＝ゲートの音が育つ
+const S11_STAGE = {"id":11,"name":"冬の大三角","en":"WINTER TRIANGLE","level":"★★★★★★★★★★★","introMsg":"冬の大三角 ― 3つの星で、塔がめざめる","board":{"w":15.15,"d":9.9},"theme":"winter","fullLateral":true,"points":[[6.125,0.62,-4.35],[5.765,0.619,-4.35],[5.405,0.619,-4.35],[5.02,0.618,-4.35],[4.639,0.618,-4.35],[4.271,0.617,-4.354],[3.893,0.617,-4.358],[3.54,0.616,-4.322],[3.241,0.616,-4.133],[3.091,0.615,-3.809],[3.026,0.615,-3.451],[2.801,0.614,-3.17],[2.467,0.614,-3.054],[2.084,0.613,-3.046],[1.717,0.612,-3.05],[1.335,0.612,-3.05],[0.945,0.611,-3.05],[0.585,0.611,-3.05],[0.225,0.61,-3.05],[-0.135,0.61,-3.05],[-0.495,0.609,-3.05],[-0.857,0.609,-3.05],[-1.218,0.608,-3.05],[-1.583,0.608,-3.047],[-1.944,0.607,-3.043],[-2.291,0.607,-3.087],[-2.583,0.606,-3.294],[-2.714,0.606,-3.628],[-2.789,0.605,-3.981],[-3.03,0.604,-4.25],[-3.375,0.604,-4.35],[-3.76,0.603,-4.365],[-4.135,0.603,-4.355],[-4.506,0.602,-4.289],[-4.792,0.602,-4.088],[-4.963,0.601,-3.785],[-5.006,0.601,-3.407],[-4.999,0.6,-2.97],[-4.999,0.6,-2.598],[-5.012,0.6,-2.241],[-5.135,0.6,-1.906],[-5.389,0.6,-1.664],[-5.722,0.6,-1.563],[-6.07,0.6,-1.502],[-6.365,0.6,-1.316],[-6.552,0.6,-1.021],[-6.606,0.6,-0.656],[-6.606,0.6,-0.267],[-6.599,0.6,0.15],[-6.636,0.6,0.507],[-6.668,0.6,0.859],[-6.455,0.653,1.054],[-6.12,0.786,0.889],[-5.773,0.926,0.708],[-5.413,1.058,0.641],[-5.119,1.195,0.878],[-4.931,1.329,1.204],[-4.773,1.463,1.546],[-4.613,1.598,1.889],[-4.421,1.735,2.222],[-4.144,1.868,2.465],[-3.756,2.007,2.47],[-3.384,2.144,2.376],[-3.022,2.275,2.321],[-2.916,2.3,2.639],[-2.959,2.3,2.95],[-2.942,2.282,3.3],[-2.801,2.263,3.637],[-2.536,2.244,3.866],[-2.159,2.224,3.96],[-1.773,2.204,3.968],[-1.399,2.185,3.961],[-1.045,2.166,3.96],[-0.679,2.147,3.96],[-0.326,2.129,3.96],[-0.152,2.12,3.96],[0.226,2.077,3.96],[0.596,2.036,3.96],[0.982,1.992,3.96],[1.339,1.952,3.96],[1.697,1.912,3.96],[2.064,1.87,3.96],[2.421,1.83,3.961],[2.807,1.787,3.962],[3.18,1.744,3.961],[3.537,1.704,3.961],[3.895,1.664,3.965],[4.257,1.623,3.966],[4.619,1.582,3.952],[4.985,1.539,3.859],[5.211,1.499,3.591],[5.275,1.46,3.25],[5.275,1.478,2.862],[5.275,1.496,2.5],[5.275,1.514,2.114],[5.275,1.531,1.764],[5.279,1.548,1.397],[5.282,1.565,1.033],[5.242,1.582,0.686],[5.063,1.599,0.387],[4.761,1.616,0.207],[4.409,1.633,0.189],[4.09,1.65,0.34],[3.88,1.666,0.623],[3.82,1.678,0.97],[3.822,1.665,1.361],[3.825,1.66,1.53],[3.613,1.964,1.739],[3.256,2.273,1.796],[2.934,2.573,1.743],[3.296,2.887,1.684],[3.655,3.197,1.634],[3.825,3.46,1.45],[3.825,3.456,1.073],[3.825,3.452,0.707],[3.838,3.448,0.338],[3.962,3.443,-0.02],[4.23,3.439,-0.288],[4.586,3.435,-0.417],[4.964,3.431,-0.384],[5.292,3.416,-0.195],[5.508,3.399,0.115],[5.578,3.383,0.485],[5.576,3.366,0.866],[5.575,3.35,1.217],[5.575,3.333,1.589],[5.572,3.317,1.96],[5.568,3.3,2.334],[5.608,3.284,2.695],[5.81,3.268,2.976],[6.136,3.252,3.099],[6.474,3.237,3.02],[6.713,3.221,2.765],[6.781,3.204,2.396],[6.776,3.187,2.024],[6.775,3.17,1.64],[6.775,3.13,1.15],[6.775,3.098,0.772],[6.775,3.065,0.397],[6.775,3.035,0.036],[6.775,3.004,-0.322],[6.775,2.98,-0.6],[6.775,2.949,-0.958],[6.775,2.919,-1.316],[6.775,2.887,-1.68],[6.775,2.855,-2.053],[6.775,2.83,-2.35],[6.78,2.797,-2.731],[6.721,2.769,-3.105],[6.515,2.741,-3.428],[6.192,2.713,-3.634],[5.811,2.685,-3.684],[5.444,2.658,-3.569],[5.161,2.63,-3.309],[5.018,2.602,-2.957],[4.998,2.576,-2.602],[5,2.56,-2.376],[4.885,2.553,-2.041],[4.597,2.546,-1.847],[4.22,2.539,-1.819],[3.852,2.532,-1.825],[3.463,2.525,-1.826],[3.103,2.518,-1.826],[2.749,2.511,-1.826],[2.389,2.509,-1.826],[2.037,2.507,-1.826],[1.687,2.506,-1.826],[1.302,2.504,-1.826],[0.917,2.503,-1.827],[0.529,2.501,-1.837],[0.225,2.5,-1.826],[-0.129,2.533,-1.783],[-0.502,2.569,-1.681],[-0.813,2.601,-1.516],[-1.091,2.634,-1.296],[-1.32,2.666,-1.03],[-1.499,2.699,-0.724],[-1.616,2.731,-0.393],[-1.671,2.764,-0.042],[-1.66,2.796,0.307],[-1.583,2.829,0.655],[-1.427,2.865,1.011],[-1.223,2.898,1.303],[-0.943,2.934,1.572],[-0.643,2.967,1.764],[-0.281,3.003,1.905],[0.07,3.036,1.967],[0.458,3.071,1.959],[0.806,3.104,1.882],[1.162,3.14,1.726],[1.454,3.173,1.522],[1.723,3.209,1.242],[1.915,3.242,0.942],[2.056,3.278,0.58],[2.118,3.311,0.229],[2.11,3.346,-0.159],[2.033,3.379,-0.507],[1.877,3.415,-0.863],[1.673,3.448,-1.155],[1.393,3.484,-1.424],[1.093,3.517,-1.616],[0.731,3.553,-1.757],[0.38,3.586,-1.819],[-0.008,3.622,-1.811],[-0.356,3.654,-1.734],[-0.712,3.69,-1.578],[-1.004,3.723,-1.374],[-1.273,3.759,-1.094],[-1.465,3.792,-0.794],[-1.606,3.828,-0.432],[-1.668,3.861,-0.081],[-1.66,3.897,0.307],[-1.583,3.929,0.655],[-1.427,3.965,1.011],[-1.223,3.998,1.303],[-0.943,4.034,1.572],[-0.643,4.067,1.764],[-0.281,4.103,1.905],[0.07,4.136,1.967],[0.458,4.172,1.959],[0.806,4.204,1.882],[1.162,4.24,1.726],[1.454,4.273,1.522],[1.723,4.309,1.242],[1.915,4.342,0.942],[2.056,4.378,0.58],[2.118,4.411,0.229],[2.11,4.447,-0.159],[2.033,4.479,-0.507],[1.877,4.515,-0.863],[1.673,4.548,-1.155],[1.393,4.584,-1.424],[1.093,4.617,-1.616],[0.731,4.653,-1.757],[0.38,4.686,-1.819],[-0.008,4.722,-1.811],[-0.356,4.755,-1.734],[-0.712,4.79,-1.578],[-1.004,4.823,-1.374],[-1.273,4.859,-1.094],[-1.465,4.892,-0.794],[-1.606,4.928,-0.432],[-1.668,4.961,-0.081],[-1.66,4.997,0.307],[-1.583,5.03,0.655],[-1.427,5.065,1.011],[-1.223,5.098,1.303],[-0.943,5.134,1.572],[-0.643,5.167,1.764],[-0.281,5.203,1.905],[0.07,5.236,1.967],[0.458,5.272,1.959],[0.806,5.305,1.882],[1.162,5.34,1.726],[1.454,5.373,1.522],[1.723,5.409,1.242],[1.915,5.442,0.942],[2.056,5.478,0.58],[2.118,5.511,0.229],[2.11,5.547,-0.159],[2.033,5.58,-0.507],[1.877,5.615,-0.863],[1.673,5.648,-1.155],[1.393,5.684,-1.424],[1.093,5.717,-1.616],[0.766,5.749,-1.742],[0.412,5.783,-1.806],[0.225,5.8,-1.826],[-0.138,5.8,-1.831],[-0.497,5.8,-1.826],[-0.88,5.79,-1.826],[-1.239,5.768,-1.826],[-1.596,5.746,-1.826],[-1.98,5.723,-1.826],[-2.361,5.699,-1.826],[-2.738,5.676,-1.826],[-3.114,5.653,-1.826],[-3.494,5.63,-1.826],[-3.975,5.6,-1.826]],"half":0.51,"demoSpeed":2.2,"checkpointEvery":2.6,"startS":0.42,"palette":{"deck":["#141a22","#0b0f15","#05070a"],"bg":["#3b4a5e","#1e2836","#0d131c","#04060a"]},"stars":[37,75,156],"starNames":["α ベテルギウス","α シリウス","α プロキオン"],"lines":[[0,1],[1,2],[2,0]],"starColors":["#ff7a3c","#bfe4ff","#fff0b0"],"widths":[{"from":0.1684,"to":0.1714,"half":0.34},{"from":0.2347,"to":0.2376,"half":0.34}],"openings":[{"side":-1,"from":0.9684,"to":0.9971},{"side":1,"from":0.9684,"to":0.9971}],"gates":[0.1323,0.2684,0.5607],"gateNoFeet":[2],"gateGrow":true,"relays":[0.1369,0.2364,0.2745,0.41,0.576,0.9646],"relaySides":[1,-1,1,-1,1,-1],"banks":[{"from":0.6158,"to":0.9534,"deg":6}],"lifts":[{"name":"渦巻きチャージリフト","x":-4.779,"z":1.55,"R":2.28,"half":0.34,"wall":0.06,"wallH":0.3,"tongue":1.4,"rOut":1.82,"y0":0.6,"y1":2.3,"startTop":false,"pts":[[-6.599,0.15],[-6.599,0.27],[-6.599,0.39],[-6.599,0.51],[-6.599,0.63],[-6.599,0.75],[-6.599,0.87],[-6.599,0.99],[-6.599,1.11],[-6.599,1.23],[-6.599,1.35],[-6.599,1.47],[-6.599,1.55],[-6.552,1.783],[-6.475,2.004],[-6.371,2.209],[-6.243,2.395],[-6.094,2.559],[-5.929,2.699],[-5.749,2.813],[-5.559,2.901],[-5.364,2.961],[-5.166,2.994],[-4.97,3],[-4.779,2.98],[-4.597,2.936],[-4.426,2.868],[-4.27,2.781],[-4.129,2.676],[-4.008,2.556],[-3.906,2.423],[-3.825,2.282],[-3.766,2.135],[-3.729,1.985],[-3.712,1.836],[-3.716,1.69],[-3.739,1.55],[-3.751,1.442],[-3.784,1.338],[-3.839,1.244],[-3.912,1.164],[-3.999,1.1],[-4.099,1.055],[-4.205,1.033],[-4.314,1.033],[-4.42,1.055],[-4.519,1.1],[-4.607,1.164],[-4.68,1.244],[-4.735,1.338],[-4.768,1.442],[-4.779,1.55],[-4.791,1.658],[-4.824,1.762],[-4.879,1.856],[-4.952,1.936],[-5.039,2],[-5.139,2.045],[-5.245,2.067],[-5.354,2.067],[-5.46,2.045],[-5.559,2],[-5.647,1.936],[-5.72,1.856],[-5.775,1.762],[-5.808,1.658],[-5.819,1.55],[-5.843,1.41],[-5.847,1.264],[-5.83,1.115],[-5.793,0.965],[-5.734,0.818],[-5.653,0.677],[-5.551,0.544],[-5.429,0.424],[-5.289,0.319],[-5.133,0.232],[-4.962,0.164],[-4.78,0.12],[-4.589,0.1],[-4.393,0.106],[-4.195,0.139],[-4,0.199],[-3.81,0.287],[-3.63,0.401],[-3.465,0.541],[-3.316,0.705],[-3.188,0.891],[-3.084,1.096],[-3.007,1.317],[-2.959,1.55],[-2.959,1.67],[-2.959,1.79],[-2.959,1.91],[-2.959,2.03],[-2.959,2.15],[-2.959,2.27],[-2.959,2.39],[-2.959,2.51],[-2.959,2.63],[-2.959,2.75],[-2.959,2.87]],"from":0.1714,"to":0.2347,"relay":1}],"wheels":[{"name":"星汲みホイール","x":3.825,"z":1.75,"R":0.9,"yc":2.775,"zb":1.61,"buckets":4,"interval":1.5,"phase":0.35,"from":0.3769,"to":0.4032,"relay":3,"ret":{"half":0.3,"pts":[[3.825,1.46,2.27],[3.849,1.461,2.33],[3.88,1.462,2.416],[3.918,1.463,2.516],[3.964,1.464,2.618],[4.016,1.465,2.711],[4.077,1.466,2.785],[4.151,1.467,2.848],[4.234,1.468,2.905],[4.319,1.469,2.958],[4.402,1.47,3.012],[4.475,1.471,3.07],[4.543,1.472,3.147],[4.603,1.473,3.235],[4.66,1.474,3.32],[4.716,1.475,3.386],[4.775,1.476,3.42],[4.861,1.477,3.4],[4.954,1.478,3.332],[5.037,1.479,3.253],[5.095,1.48,3.2]],"to":0.3257,"side":-1}}],"railGaps":[{"side":-1,"from":0.3184,"to":0.3267}],"balance":{"init":"B","swingT":1.6,"arms":[{"id":"A","name":"腕","from":0.491,"to":0.525,"hub":0.508,"trav":"A","swing":0.171}],"weights":[{"at":0.4833,"len":0.5,"set":"A"}],"hubXZ":[6.775,-0.6],"hubY":[2.98],"crownH":4.33,"pillarR":0.82},"trapdoors":[{"name":"ゼンマイの落とし戸","from":0.0488,"to":0.0721,"panels":4,"gap":0.12,"period":2.6,"closed":1.4,"move":0.25,"delay":0.45,"phase":0,"vGo":1.5}],"rails2":[{"from":0.9684,"to":0.9971,"d":[[0,0.3],[1,0.3]]}],"tower":{"name":"大らせん塔","x":0.225,"z":0.074,"r":1.9,"from":0.5862,"to":0.983,"s0":0.61,"s1":0.9592,"dH":3.2,"riseT":3.6,"y0":2.5,"y1":5.800000000000001,"need":3},"pins":{"from":0.6187,"to":0.9544,"notes":[0,2,4,5,7,9,11,12,14,16,17,19,21,23,24,26,28,29,31,33,35,36],"side":-1},"ornaments":{"medallions":true,"grand":true}};
 
 // ============================================================================
 //  ステージ定義（3つ、難易度順）。数値は盤のローカル座標。
@@ -2161,6 +2304,7 @@ const STAGES = [
   S8_STAGE,
   S9_STAGE,
   S10_STAGE,
+  S11_STAGE,
 ];
 
 // ============================================================================
@@ -2293,7 +2437,7 @@ const MAT = {
   orange: std(0xffcf7a, 0.62, 0.2, { emissive: 0xe0952e, emissiveIntensity: 0.7 }),
   white: std(0xfff0d8, 0.2, 0.15, { emissive: 0xffd9a0, emissiveIntensity: 0.9 }),
   deckGlass: std(0xcfe0ff, 0.30, 0.16, { transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false }),
-  platform: std(0x07060c, 0.20, 0.7),
+  platform: new THREE.MeshBasicMaterial({ color: 0xffffff, fog: true, toneMapped: true }),   // 盤下のビロード×羅針盤台座（1枚CanvasTexture・ライト計算なし）
   pearl: std(0xffffff, 0.28, 0.18, { envMapIntensity: 1.65 }),   // 螺鈿（虹色テクスチャ＋環境反射で軽量化）
   rose: std(0xe7a592, 0.86, 0.24),                        // ローズゴールド（S8 春のパレット）
   chrome: std(0xe3e9f1, 1.0, 0.13),                       // クローム銀（S9 夏のパレット：3層・天の川・レール）
@@ -2304,6 +2448,16 @@ const MAT = {
   brassOld: std(0xc79a52, 0.86, 0.30),                    // 古真鍮（S10：上端レール・分銅）
   amber: std(0xffb34d, 0.25, 0.22, { emissive: 0xd2700f, emissiveIntensity: 0.85 }),   // 琥珀（S10：灯り・玉）
   amberLac: lac(0x6e2f0c, 0.30),                          // 琥珀漆（S10：内側の管・横棒）
+  copperWarn: std(0x9a2e1c, 0.72, 0.36, { emissive: 0x5c1408, emissiveIntensity: 0.45 }), // 鈍い赤銅（S10改修：開口の危険側縁）
+  brassBright: std(0xe6be68, 0.90, 0.22),                 // 磨き真鍮（S10改修：千鳥ピン・水準針・ポケット枠）
+  silverW: std(0xe8eef5, 0.95, 0.18),                     // 白銀（S11 冬のパレット：3層の外枠・上端レール・ワイヤー）
+  silverD: std(0x9aa6b5, 0.90, 0.28),                     // いぶし銀（S11：2層の外枠）
+  ironB: std(0x2b3038, 0.82, 0.40),                       // 黒鉄（S11：1層の外枠・梁・塔の芯）
+  ironLac: lac(0x161a21, 0.30),                           // 黒鉄の漆（S11：内側の管・横棒）
+  frost: std(0xe4f4ff, 0.3, 0.18, { emissive: 0x7fbfff, emissiveIntensity: 0.7 }),   // 霜の灯り（S11）
+  starBe: std(0xffb08a, 0.3, 0.2, { emissive: 0xff5a1e, emissiveIntensity: 1.0 }),   // ベテルギウスの赤橙（S11 の差し色）
+  starSi: std(0xe6f4ff, 0.3, 0.2, { emissive: 0x6fb6ff, emissiveIntensity: 1.0 }),   // シリウスの青白
+  starPr: std(0xfff3c8, 0.3, 0.2, { emissive: 0xffc94a, emissiveIntensity: 1.0 }),   // プロキオンの淡い黄
 };
 for (const k in MAT) MAT[k].name = k;
 // 螺鈿：黒漆の地に虹色の貝片をちりばめたテクスチャ（256x256 タイルで VRAM と起動時間を削減）
@@ -2572,7 +2726,7 @@ function makeDeckTexture(stage) {
       g.fillStyle = '#e8c878'; g.beginPath(); for (let j = 0; j < 8; j++) { const a = j / 8 * TAU, r = j % 2 ? 4 : 12; g[j ? 'lineTo' : 'moveTo'](u + Math.cos(a) * r, v + Math.sin(a) * r); } g.closePath(); g.fill();
     }
     g.fillStyle = '#c9a65a'; g.font = 'italic 20px Georgia, serif'; g.textAlign = 'right';
-    g.fillText(['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][stage.id] + ' · ' + stage.en, w - 46, h - 44);
+    g.fillText(['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'][stage.id] + ' · ' + stage.en, w - 46, h - 44);
   });
 }
 const deckMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.14, roughness: 0.24, envMapIntensity: 1.45 });   // 黒漆の艶
@@ -2621,19 +2775,436 @@ function addCabinet(B) {
   [legG, footG, studG, plateG, pinG, tG].forEach(g => g.dispose());
 }
 
+// ステージ別の背景・台座・夜空星図・タイトルプレート統一パレット（全11面：通常I〜VIIは星座に合わせた低彩度バリエーション、VIII〜XIは四季金属パレット）
+const STAGE_THEMES = {
+  1: { // カシオペヤ：王妃の濃紺ビロード × 燻し真鍮
+    velvet: ['#191b34', '#101224', '#080914'], wood: ['#1b140e', '#0e0a07'],
+    metal: ['#c4a160', '#e8ca8a', '#70582e'], lantern: [255, 206, 136],
+    sky: ['#222548', '#13152e', '#090b19', '#04040c'], fog: '#090b18',
+    chart: [[204, 174, 114], [238, 210, 152]], moon: 0xdce4ff, stars: 0xd8dcff,
+    uiAccent: '#cfa964', uiBg: ['#1b182a', '#0f0e1b'], season: null, seasonLabel: '',
+  },
+  2: { // 白鳥座：天の川の蒼紺ビロード × 淡真鍮
+    velvet: ['#141f38', '#0c1426', '#060a14'], wood: ['#141720', '#090b10'],
+    metal: ['#c0ad76', '#e4d49e', '#695e3d'], lantern: [255, 212, 150],
+    sky: ['#1a2c52', '#0f1a36', '#070d1e', '#03050d'], fog: '#080e1d',
+    chart: [[164, 188, 224], [218, 232, 248]], moon: 0xcfe2ff, stars: 0xd2e4ff,
+    uiAccent: '#c4b078', uiBg: ['#131b2e', '#0a0f1c'], season: null, seasonLabel: '',
+  },
+  3: { // 北斗七星：紫紺ビロード × 古真鍮
+    velvet: ['#201736', '#140e24', '#0a0714'], wood: ['#1c131a', '#0d090d'],
+    metal: ['#c49d62', '#e8c48c', '#705632'], lantern: [255, 204, 140],
+    sky: ['#2b1f48', '#19122e', '#0c0819', '#04030c'], fog: '#0c0819',
+    chart: [[192, 166, 218], [228, 204, 156]], moon: 0xe4daff, stars: 0xe0d6ff,
+    uiAccent: '#c8a068', uiBg: ['#1d152c', '#110c1c'], season: null, seasonLabel: '',
+  },
+  4: { // オリオン：深緑青（孔雀闇）ビロード × 渋金真鍮
+    velvet: ['#12272a', '#0b191c', '#050c0e'], wood: ['#121b19', '#080d0c'],
+    metal: ['#b8a56c', '#dcd092', '#645938'], lantern: [255, 210, 144],
+    sky: ['#16363b', '#0c2127', '#061217', '#03070a'], fog: '#061317',
+    chart: [[144, 196, 190], [208, 222, 178]], moon: 0xcbeee8, stars: 0xccece8,
+    uiAccent: '#b8a66e', uiBg: ['#101f22', '#081214'], season: null, seasonLabel: '',
+  },
+  5: { // さそり座：暗紅（アンタレス闇）ビロード × 赤味真鍮
+    velvet: ['#28131a', '#1a0b10', '#0c0508'], wood: ['#200f11', '#100708'],
+    metal: ['#c89160', '#eab786', '#744f30'], lantern: [255, 198, 134],
+    sky: ['#3b1a25', '#230e17', '#11070c', '#060205'], fog: '#12070c',
+    chart: [[210, 148, 134], [236, 186, 140]], moon: 0xf4cfc6, stars: 0xf0d2ce,
+    uiAccent: '#c89060', uiBg: ['#231217', '#13090c'], season: null, seasonLabel: '',
+  },
+  6: { // 北斗七星（大盤）：深蒼藍ビロード × 銀味燻し真鍮
+    velvet: ['#141e35', '#0c1324', '#060913'], wood: ['#151822', '#0a0b11'],
+    metal: ['#bca670', '#e0cc98', '#66583a'], lantern: [255, 210, 148],
+    sky: ['#203050', '#121c34', '#080e1d', '#03050c'], fog: '#090e1c',
+    chart: [[164, 188, 220], [214, 202, 158]], moon: 0xd6e6ff, stars: 0xd6e4ff,
+    uiAccent: '#bfa872', uiBg: ['#131b2c', '#0a0f1b'], season: null, seasonLabel: '',
+  },
+  7: { // さそり座（大盤）：深葡萄闇ビロード × 燻し古金
+    velvet: ['#22152d', '#160d1e', '#0a0610'], wood: ['#1d121d', '#0e080f'],
+    metal: ['#c69960', '#e8c088', '#725330'], lantern: [255, 202, 140],
+    sky: ['#321e3c', '#1b1127', '#0e0817', '#05030a'], fog: '#0e0817',
+    chart: [[194, 156, 200], [228, 192, 144]], moon: 0xebd6f0, stars: 0xe6d4ee,
+    uiAccent: '#c69862', uiBg: ['#1e1326', '#110a16'], season: null, seasonLabel: '',
+  },
+  8: { // 春の大三角：ローズゴールド × 深いワイン闇
+    velvet: ['#2a1420', '#1b0c15', '#0d060b'], wood: ['#210e14', '#10060a'],
+    metal: ['#dc9d8f', '#f6c2b4', '#85554b'], lantern: [255, 206, 170],
+    sky: ['#3a2030', '#22121e', '#110910', '#060308'], fog: '#11080f',
+    chart: [[224, 162, 154], [248, 206, 194]], moon: 0xf6d4d8, stars: 0xf2dae0,
+    uiAccent: '#e7a592', uiBg: ['#27131d', '#140910'], season: 'spring', seasonLabel: '春',
+  },
+  9: { // 夏の大三角：クローム銀 × 濃藍
+    velvet: ['#12203c', '#0b152a', '#050a16'], wood: ['#0e1526', '#060a14'],
+    metal: ['#bed4ea', '#e8f3ff', '#566f8c'], lantern: [255, 218, 162],
+    sky: ['#20365e', '#122240', '#091024', '#03060d'], fog: '#091122',
+    chart: [[164, 204, 244], [224, 240, 255]], moon: 0xd0e6ff, stars: 0xd8ebff,
+    uiAccent: '#c8dcf0', uiBg: ['#111d34', '#080e1d'], season: 'summer', seasonLabel: '夏',
+  },
+  10: { // 秋の四辺形：アンティーク銅 × 焙煎セピア
+    velvet: ['#29190f', '#1b100a', '#0d0704'], wood: ['#20120a', '#100805'],
+    metal: ['#ce8654', '#efb27e', '#764426'], lantern: [255, 198, 124],
+    sky: ['#422817', '#26160c', '#130b06', '#060302'], fog: '#130b06',
+    chart: [[218, 152, 100], [246, 196, 138]], moon: 0xffd590, stars: 0xf4dec4,
+    uiAccent: '#d68954', uiBg: ['#27170d', '#140b06'], season: 'autumn', seasonLabel: '秋',
+  },
+  11: { // 冬の大三角：白銀 × 氷紺
+    velvet: ['#162232', '#0f1723', '#070b12'], wood: ['#121820', '#080b10'],
+    metal: ['#cedceb', '#f2f8ff', '#647282'], lantern: [255, 226, 184],
+    sky: ['#2b3d54', '#182434', '#0b121c', '#04060b'], fog: '#0b111b',
+    chart: [[194, 214, 236], [238, 246, 255]], moon: 0xdcedff, stars: 0xe4f0fc,
+    uiAccent: '#dce8f5', uiBg: ['#141e2b', '#0a0f17'], season: 'winter', seasonLabel: '冬',
+  },
+};
+const getStageTheme = def => STAGE_THEMES[(def && def.id) || 1] || STAGE_THEMES[1];
+
+// ビロード織り目の微細パターン（起動時に1回だけ生成して再利用）
+const velvetTile = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'), R = rng(404);
+  g.clearRect(0, 0, 128, 128);
+  for (let y = 0; y < 128; y += 2) {
+    g.fillStyle = y % 4 === 0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.028)';
+    g.fillRect(0, y, 128, 1);
+  }
+  for (let i = 0; i < 1400; i++) {
+    const x = (R() * 128) | 0, y = (R() * 128) | 0;
+    g.fillStyle = R() < 0.45 ? 'rgba(255,255,255,0.022)' : 'rgba(0,0,0,0.032)';
+    g.fillRect(x, y, 1 + ((R() * 2) | 0), 1);
+  }
+  return c;
+})();
+
+// 盤下の丸板テクスチャ（1枚を使い回し：ビロード地＋落とし影＋街灯照り返し＋真鍮羅針盤リング＋胡桃縁）
+const platformCanvas = document.createElement('canvas'); platformCanvas.width = platformCanvas.height = 1024;
+const platformTex = new THREE.CanvasTexture(platformCanvas);
+platformTex.colorSpace = THREE.SRGBColorSpace; platformTex.anisotropy = MAX_ANISO;
+MAT.platform.map = platformTex;
+
+function drawSeasonMotif2D(g, season, x, y, r, color, alpha = 0.48) {
+  g.save(); g.translate(x, y); g.strokeStyle = color; g.fillStyle = color; g.globalAlpha = alpha; g.lineWidth = 1.25;
+  if (season === 'spring') {
+    for (let k = 0; k < 5; k++) {
+      const a = k / 5 * TAU - Math.PI / 2;
+      g.beginPath(); g.ellipse(Math.cos(a) * r * 0.48, Math.sin(a) * r * 0.48, r * 0.42, r * 0.22, a, 0, TAU); g.stroke();
+    }
+    g.beginPath(); g.arc(0, 0, r * 0.16, 0, TAU); g.fill();
+  } else if (season === 'summer') {
+    g.beginPath();
+    for (let k = 0; k < 8; k++) { const a = k / 8 * TAU - Math.PI / 2, rr = k % 2 ? r * 0.30 : r; g[k ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); }
+    g.closePath(); g.stroke();
+    g.beginPath(); g.arc(0, 0, r * 0.45, 0, TAU); g.stroke();
+  } else if (season === 'autumn') {
+    g.beginPath();
+    for (let k = 0; k < 10; k++) { const a = k / 10 * TAU - Math.PI / 2, rr = k % 2 ? r * 0.42 : (k === 0 ? r : k === 4 || k === 6 ? r * 0.62 : r * 0.88); g[k ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); }
+    g.closePath(); g.stroke();
+  } else if (season === 'winter') {
+    for (let k = 0; k < 6; k++) {
+      const a = k / 6 * TAU;
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * r, Math.sin(a) * r); g.stroke();
+      const bx = Math.cos(a) * r * 0.58, by = Math.sin(a) * r * 0.58;
+      for (const s of [-1, 1]) { const a2 = a + s * 0.65; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + Math.cos(a2) * r * 0.34, by + Math.sin(a2) * r * 0.34); g.stroke(); }
+    }
+  }
+  g.restore();
+}
+
+function drawPlatformTexture(def, lanternXZ) {
+  const th = getStageTheme(def), g = platformCanvas.getContext('2d'), S2 = 1024, C0 = 512, pxM = 512 / 12.5;
+  const R = rng(701 + (def ? def.id : 1) * 31);
+  // 1. 外周の濃い胡桃材／黒漆の台座天板縁
+  const woodG = g.createRadialGradient(C0 - 90, C0 + 80, 440, C0, C0, 512);
+  woodG.addColorStop(0, th.wood[0]); woodG.addColorStop(0.86, th.wood[0]); woodG.addColorStop(1, th.wood[1]);
+  g.fillStyle = woodG; g.fillRect(0, 0, S2, S2);
+  // 木目のごく微細な同心円弧（外周 r=11.45..12.45m）
+  g.save();
+  for (let i = 0; i < 48; i++) {
+    const rr = 468 + R() * 40, a0 = R() * TAU, da = 0.4 + R() * 1.4;
+    g.strokeStyle = R() < 0.5 ? 'rgba(255,230,200,0.032)' : 'rgba(0,0,0,0.14)';
+    g.lineWidth = 0.8 + R() * 1.6;
+    g.beginPath(); g.arc(C0, C0, rr, a0, a0 + da); g.stroke();
+  }
+  g.restore();
+
+  // 2. 内側の深いビロード張り（r=0..11.46m）
+  const rVelvet = 11.46 * pxM;
+  g.save();
+  g.beginPath(); g.arc(C0, C0, rVelvet, 0, TAU); g.clip();
+  const vg = g.createRadialGradient(C0 - 70, C0 + 60, 40, C0, C0, rVelvet);
+  vg.addColorStop(0, th.velvet[0]); vg.addColorStop(0.62, th.velvet[1]); vg.addColorStop(1, th.velvet[2]);
+  g.fillStyle = vg; g.fillRect(0, 0, S2, S2);
+  // ビロードのほのかな毛並み光沢（光源方向へわずかに）
+  const nap = g.createRadialGradient(C0 - 150, C0 + 135, 20, C0 - 110, C0 + 100, 390);
+  nap.addColorStop(0, 'rgba(255,244,228,0.048)'); nap.addColorStop(0.55, 'rgba(255,244,228,0.014)'); nap.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = nap; g.fillRect(0, 0, S2, S2);
+  const pat = g.createPattern(velvetTile, 'repeat');
+  if (pat) { g.fillStyle = pat; g.fillRect(0, 0, S2, S2); }
+  // ビロード縁の落とし段差影
+  const rimAO = g.createRadialGradient(C0, C0, rVelvet - 26, C0, C0, rVelvet);
+  rimAO.addColorStop(0, 'rgba(0,0,0,0)'); rimAO.addColorStop(1, 'rgba(0,0,0,0.52)');
+  g.fillStyle = rimAO; g.fillRect(0, 0, S2, S2);
+  g.restore();
+
+  // 3. 盤下の柔らかい落とし影（ステージの実寸法 BOARD.w × BOARD.d に厳密一致）
+  const bw = (BOARD.w + 0.56) * pxM, bd = (BOARD.d + 0.56) * pxM;
+  const sxOff = 0.24 * pxM, szOff = -0.30 * pxM;
+  const rrect = (cx, cy, w, h, rad) => {
+    const x = cx - w / 2, y = cy - h / 2, rr = Math.min(rad, w / 2, h / 2);
+    g.beginPath(); g.moveTo(x + rr, y); g.arcTo(x + w, y, x + w, y + h, rr); g.arcTo(x + w, y + h, x, y + h, rr);
+    g.arcTo(x, y + h, x, y, rr); g.arcTo(x, y, x + w, y, rr); g.closePath();
+  };
+  g.save();
+  const shadowSteps = [
+    [130, 0.06], [96, 0.09], [66, 0.13], [40, 0.17], [18, 0.22], [2, 0.28], [-16, 0.34],
+  ];
+  for (const [pad, a] of shadowSteps) {
+    g.fillStyle = `rgba(0,0,0,${a})`;
+    rrect(C0 + sxOff, C0 + szOff, bw + pad, bd + pad, 26 + Math.max(0, pad) * 0.55);
+    g.fill();
+  }
+  const coreAO = g.createRadialGradient(C0, C0, 6, C0, C0, 96);
+  coreAO.addColorStop(0, 'rgba(0,0,0,0.62)'); coreAO.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = coreAO; g.beginPath(); g.arc(C0, C0, 96, 0, TAU); g.fill();
+  g.restore();
+
+  // 4. 通常サイズ盤（S1〜S5）の余白を品よく締める内側の極細象嵌リング
+  const [mMain, mHi, mDark] = th.metal;
+  if (!BOARD.big) {
+    g.save();
+    g.strokeStyle = mMain; g.globalAlpha = 0.24; g.lineWidth = 1.1;
+    g.beginPath(); g.arc(C0, C0, 7.52 * pxM, 0, TAU); g.stroke();
+    g.globalAlpha = 0.14; g.lineWidth = 0.8;
+    g.beginPath(); g.arc(C0, C0, 7.72 * pxM, 0, TAU); g.stroke();
+    g.fillStyle = mHi; g.globalAlpha = 0.26;
+    for (let k = 0; k < 48; k++) {
+      const a = k / 48 * TAU;
+      const rr = k % 6 === 0 ? 1.8 : 0.9;
+      g.beginPath(); g.arc(C0 + Math.cos(a) * 7.62 * pxM, C0 + Math.sin(a) * 7.62 * pxM, rr, 0, TAU); g.fill();
+    }
+    g.restore();
+  }
+
+  // 5. 外周の真鍮羅針盤リング（r = 10.22m .. 11.38m：大盤 S6〜S11 でも全周が盤の外に見える）
+  const rIn0 = 10.22 * pxM, rIn1 = 10.34 * pxM, rOut0 = 11.24 * pxM, rOut1 = 11.36 * pxM, rMid = 10.78 * pxM;
+  g.save();
+  // 羅針盤帯のわずかな彫り込み陰影
+  g.strokeStyle = 'rgba(0,0,0,0.34)'; g.lineWidth = rOut1 - rIn0 + 4;
+  g.beginPath(); g.arc(C0, C0, (rIn0 + rOut1) / 2, 0, TAU); g.stroke();
+  // 光源方向に応じた金属光沢グラデーション
+  const mGrad = g.createLinearGradient(C0 - rOut1, C0 + rOut1, C0 + rOut1, C0 - rOut1);
+  mGrad.addColorStop(0, mHi); mGrad.addColorStop(0.45, mMain); mGrad.addColorStop(1, mDark);
+  // 二重外枠・二重内枠
+  g.strokeStyle = mGrad; g.globalAlpha = 0.68; g.lineWidth = 1.9;
+  g.beginPath(); g.arc(C0, C0, rIn0, 0, TAU); g.stroke();
+  g.beginPath(); g.arc(C0, C0, rOut1, 0, TAU); g.stroke();
+  g.globalAlpha = 0.36; g.lineWidth = 1.0;
+  g.beginPath(); g.arc(C0, C0, rIn1, 0, TAU); g.stroke();
+  g.beginPath(); g.arc(C0, C0, rOut0, 0, TAU); g.stroke();
+  // 2.5度 / 15度 / 30度の精密目盛り
+  for (let k = 0; k < 144; k++) {
+    const a = k / 144 * TAU - Math.PI / 2;
+    const is30 = k % 12 === 0, is15 = k % 6 === 0, is5 = k % 2 === 0;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const rr0 = rIn1;
+    const rr1 = is30 ? rOut0 : is15 ? rIn1 + (rOut0 - rIn1) * 0.56 : is5 ? rIn1 + (rOut0 - rIn1) * 0.34 : rIn1 + (rOut0 - rIn1) * 0.20;
+    g.strokeStyle = is30 ? mHi : mGrad;
+    g.globalAlpha = is30 ? 0.66 : is15 ? 0.48 : is5 ? 0.32 : 0.20;
+    g.lineWidth = is30 ? 1.6 : is15 ? 1.15 : 0.85;
+    g.beginPath(); g.moveTo(C0 + ca * rr0, C0 + sa * rr0); g.lineTo(C0 + ca * rr1, C0 + sa * rr1); g.stroke();
+  }
+  // 4方位の菱形＆極小クラシック方位刻印（N / E / S / W）
+  const dirs = ['N', 'E', 'S', 'W'];
+  g.font = '600 13px Baskerville, Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let k = 0; k < 4; k++) {
+    const a = k * Math.PI / 2 - Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+    g.save(); g.translate(C0 + ca * (rMid + 4), C0 + sa * (rMid + 4)); g.rotate(a + Math.PI / 2);
+    g.fillStyle = mHi; g.globalAlpha = 0.70; g.fillText(dirs[k], 0, 0);
+    g.beginPath(); g.moveTo(0, 12); g.lineTo(3.2, 16); g.lineTo(0, 20); g.lineTo(-3.2, 16); g.closePath(); g.globalAlpha = 0.60; g.fill();
+    g.restore();
+  }
+  // 4斜め方位（45/135/225/315度）：四季面は季節紋、通常面は羅針星
+  for (let k = 0; k < 4; k++) {
+    const a = (k + 0.5) * Math.PI / 2 - Math.PI / 2, px = C0 + Math.cos(a) * rMid, py = C0 + Math.sin(a) * rMid;
+    if (th.season) drawSeasonMotif2D(g, th.season, px, py, 11.5, mHi, 0.64);
+    else {
+      g.save(); g.translate(px, py); g.rotate(a); g.fillStyle = mMain; g.globalAlpha = 0.54;
+      g.beginPath(); g.moveTo(7, 0); g.lineTo(2, 2); g.lineTo(0, 7); g.lineTo(-2, 2); g.lineTo(-7, 0); g.lineTo(-2, -2); g.lineTo(0, -7); g.lineTo(2, -2); g.closePath(); g.fill();
+      g.restore();
+    }
+  }
+  // 外周木枠の細い真鍮トリム（シルエットを上品に縁取る）
+  g.strokeStyle = mGrad; g.globalAlpha = 0.32; g.lineWidth = 1.4;
+  g.beginPath(); g.arc(C0, C0, 12.24 * pxM, 0, TAU); g.stroke();
+  g.restore();
+
+  // 6. 四隅の街灯からの暖色の照り返し（ビロードと羅針盤リングに柔らかく滲む）
+  const corners = (lanternXZ && lanternXZ.length) ? lanternXZ
+    : [[-BOARD.w / 2 + 0.33, -BOARD.d / 2 + 0.32], [BOARD.w / 2 - 0.33, -BOARD.d / 2 + 0.32], [-BOARD.w / 2 + 0.33, BOARD.d / 2 - 0.32], [BOARD.w / 2 - 0.33, BOARD.d / 2 - 0.32]];
+  const [lr, lg2, lb] = th.lantern;
+  g.save();
+  g.globalCompositeOperation = 'screen';
+  for (const [lx, lz] of corners) {
+    const px = C0 + lx * 1.13 * pxM, py = C0 + lz * 1.16 * pxM;
+    const rad = (BOARD.big ? 3.8 : 3.5) * pxM;
+    const gr = g.createRadialGradient(px, py, 4, px, py, rad);
+    gr.addColorStop(0, `rgba(${lr},${lg2},${lb},0.36)`);
+    gr.addColorStop(0.36, `rgba(${lr},${lg2},${lb},0.18)`);
+    gr.addColorStop(0.72, `rgba(${lr},${lg2},${lb},0.05)`);
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(px, py, rad, 0, TAU); g.fill();
+  }
+  g.restore();
+
+  platformTex.needsUpdate = true;
+}
+
+// 夜空の極細天球星図ドーム（1メッシュ・追加 drawCalls +1・1周約4分の微速回転。1024×1024正方形×水平3周で歪みゼロ＆極細線描写）
+const celestialCanvas = document.createElement('canvas'); celestialCanvas.width = 1024; celestialCanvas.height = 1024;
+const celestialTex = new THREE.CanvasTexture(celestialCanvas);
+celestialTex.colorSpace = THREE.SRGBColorSpace;
+celestialTex.wrapS = THREE.RepeatWrapping;
+celestialTex.repeat.set(3, 1);
+celestialTex.anisotropy = Math.min(4, MAX_ANISO);
+const celestialMat = new THREE.MeshBasicMaterial({
+  map: celestialTex, side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending,
+  depthWrite: false, depthTest: true, fog: false, toneMapped: true,
+});
+const celestialDome = new THREE.Mesh(new THREE.SphereGeometry(68, 48, 20, 0, TAU, Math.PI * 0.16, Math.PI * 0.68), celestialMat);
+celestialDome.position.set(0, 4, 0);
+celestialDome.rotation.z = 0.06;
+celestialDome.renderOrder = -50;
+celestialDome.frustumCulled = false;
+scene.add(celestialDome);
+
+function drawCelestialTexture(def) {
+  const th = getStageTheme(def), g = celestialCanvas.getContext('2d'), W = 1024, H = 1024;
+  const [c0, c1] = th.chart;
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  g.fillStyle = '#000000'; g.fillRect(0, 0, W, H);
+  const R = rng(9100 + (def ? def.id : 1) * 53);
+
+  // 1. 経緯線（赤経8本×3周＝15度刻み・赤緯4本：極細・低コントラスト）
+  g.strokeStyle = rgba(c0, 0.10); g.lineWidth = 0.9;
+  for (let k = 0; k < 8; k++) {
+    const x = k / 8 * W + 0.5;
+    g.beginPath(); g.moveTo(x, H * 0.08); g.lineTo(x, H * 0.92); g.stroke();
+  }
+  for (const fy of [0.22, 0.36, 0.62, 0.76]) {
+    g.strokeStyle = rgba(c0, fy === 0.36 || fy === 0.62 ? 0.11 : 0.08);
+    g.beginPath(); g.moveTo(0, H * fy); g.lineTo(W, H * fy); g.stroke();
+  }
+
+  // 2. 天の赤道（二重極細線＋精密角度目盛り）
+  const yEq = H * 0.49;
+  g.strokeStyle = rgba(c0, 0.20); g.lineWidth = 1.0;
+  g.beginPath(); g.moveTo(0, yEq - 6); g.lineTo(W, yEq - 6); g.moveTo(0, yEq + 6); g.lineTo(W, yEq + 6); g.stroke();
+  for (let k = 0; k < 96; k++) {
+    const x = k / 96 * W;
+    const isMajor = k % 12 === 0, isMid = k % 4 === 0;
+    const hh = isMajor ? 13 : isMid ? 8.5 : 4.5;
+    g.strokeStyle = isMajor ? rgba(c1, 0.28) : rgba(c0, isMid ? 0.20 : 0.13);
+    g.lineWidth = isMajor ? 1.1 : 0.8;
+    g.beginPath(); g.moveTo(x, yEq - hh); g.lineTo(x, yEq + hh); g.stroke();
+  }
+
+  // 3. 傾いた黄道帯（周期連続の二重正弦曲線＋角度刻み＋天球節）
+  const eclY = x => H * 0.47 + Math.sin(x / W * TAU + 0.55) * H * 0.14;
+  const eclDY = x => Math.cos(x / W * TAU + 0.55) * (TAU / W) * H * 0.14;
+  for (const off of [-7, 7]) {
+    g.strokeStyle = rgba(c1, 0.22); g.lineWidth = 0.95;
+    g.beginPath();
+    for (let x = 0; x <= W; x += 6) { const y = eclY(x) + off; x === 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.stroke();
+  }
+  // 補助の傾いた天球弧（逆位相、ごく淡く）
+  g.strokeStyle = rgba(c0, 0.11); g.lineWidth = 0.8;
+  g.beginPath();
+  for (let x = 0; x <= W; x += 6) { const y = H * 0.50 - Math.sin(x / W * TAU + 1.9) * H * 0.12; x === 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+  g.stroke();
+
+  for (let k = 0; k < 48; k++) {
+    const x = k / 48 * W, y = eclY(x), sl = eclDY(x), len = Math.hypot(1, sl);
+    const nx = -sl / len, ny = 1 / len, isMajor = k % 6 === 0;
+    const hh = isMajor ? 14 : 6.5;
+    g.strokeStyle = rgba(c1, isMajor ? 0.28 : 0.16); g.lineWidth = isMajor ? 1.05 : 0.8;
+    g.beginPath(); g.moveTo(x - nx * hh, y - ny * hh); g.lineTo(x + nx * hh, y + ny * hh); g.stroke();
+    if (isMajor) {
+      if (th.season) drawSeasonMotif2D(g, th.season, x, y, 10.5, `rgb(${c1[0]},${c1[1]},${c1[2]})`, 0.24);
+      else {
+        g.strokeStyle = rgba(c1, 0.24); g.lineWidth = 0.95;
+        g.beginPath(); g.arc(x, y, 6.2, 0, TAU); g.stroke();
+      }
+    }
+  }
+
+  // 4. 極細の星図線（カメラ視界帯へ繊細・正円バランスで配置）
+  for (let c = 0; c < 12; c++) {
+    const bx = (c + 0.18 + R() * 0.64) / 12 * W;
+    const by = H * (0.20 + R() * 0.54);
+    const pts = [];
+    const nPts = 3 + ((R() * 3) | 0);
+    let px = bx, py = by;
+    for (let j = 0; j < nPts; j++) {
+      pts.push([px, py]);
+      px += (R() - 0.5) * 68; py += (R() - 0.5) * 62;
+    }
+    g.strokeStyle = rgba(c1, 0.19); g.lineWidth = 0.9;
+    g.beginPath();
+    pts.forEach(([x, y], j) => { j === 0 ? g.moveTo(x, y) : g.lineTo(x, y); });
+    g.stroke();
+    for (const [x, y] of pts) {
+      const big = R() < 0.38;
+      g.fillStyle = rgba(c1, big ? 0.34 : 0.26); g.beginPath(); g.arc(x, y, big ? 2.2 : 1.4, 0, TAU); g.fill();
+      if (big) {
+        g.strokeStyle = rgba(c1, 0.22); g.lineWidth = 0.8;
+        g.beginPath(); g.arc(x, y, 5.8, 0, TAU); g.stroke();
+        g.beginPath(); g.moveTo(x - 8, y); g.lineTo(x + 8, y); g.moveTo(x, y - 8); g.lineTo(x, y + 8); g.stroke();
+      }
+    }
+  }
+
+  // 5. 微細な星粒（天球図の背景星）
+  for (let i = 0; i < 240; i++) {
+    const x = R() * W, y = H * (0.12 + R() * 0.76), r = R() < 0.82 ? 1.2 : 1.9;
+    g.fillStyle = rgba(c1, 0.14 + R() * 0.20);
+    g.fillRect(x, y, r, r);
+  }
+
+  // 6. 上下縁の滑らかな黒フェード（帯の境界が絶対に見えないように）
+  const fadeT = g.createLinearGradient(0, 0, 0, H * 0.14);
+  fadeT.addColorStop(0, '#000000'); fadeT.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = fadeT; g.fillRect(0, 0, W, H * 0.14);
+  const fadeB = g.createLinearGradient(0, H * 0.86, 0, H);
+  fadeB.addColorStop(0, 'rgba(0,0,0,0)'); fadeB.addColorStop(1, '#000000');
+  g.fillStyle = fadeB; g.fillRect(0, H * 0.86, W, H * 0.14);
+
+  celestialTex.needsUpdate = true;
+}
+
 // 固定側：大きな円盤・柔らかい影・支柱（ジンバル）・星空
+let bgStarsMat = null;
 {
   const B = new Batch();
-  const pg = new THREE.CylinderGeometry(12.5, 12.5, 0.2, 72); B.put(MAT.platform, pg, 0, -2.15, 0);
+  const pg = new THREE.CylinderGeometry(12.5, 12.5, 0.2, 72);
+  // 上面円盤へ 1:1 平面 UV を割り当て（側面・底面は外周の木枠色を参照）
+  {
+    const pos = pg.attributes.position, nor = pg.attributes.normal, uv = pg.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      if (nor.getY(i) > 0.5) uv.setXY(i, pos.getX(i) / 25 + 0.5, -pos.getZ(i) / 25 + 0.5);
+      else uv.setXY(i, 0.5, 0.008);
+    }
+    uv.needsUpdate = true;
+  }
+  B.put(MAT.platform, pg, 0, -2.15, 0);
   const col = new THREE.CylinderGeometry(0.42, 0.62, 0.62, 28); B.put(MAT.navy, col, 0, -1.74, 0);
   const ring = new THREE.TorusGeometry(0.5, 0.05, 10, 36); B.put(MAT.gold, ring, 0, -1.5, 0, Math.PI / 2);
   const ring2 = new THREE.TorusGeometry(0.64, 0.06, 10, 36); B.put(MAT.gold, ring2, 0, -2.02, 0, Math.PI / 2);
   const joint = new THREE.SphereGeometry(0.36, 24, 16); B.put(MAT.lightGold, joint, 0, -1.3, 0);
   B.build(base);
-  base.children.forEach(m => { if (m.material === MAT.platform) { m.castShadow = false; } });
+  base.children.forEach(m => { if (m.material === MAT.platform) { m.castShadow = false; m.receiveShadow = false; } });
+  // 落とし影は盤下丸板の1枚テクスチャへ統合済み（余計な透過オーバードローを削減）
   const halo = new THREE.Mesh(new THREE.PlaneGeometry(15.5, 11.5), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.82, depthWrite: false, color: 0x000000 }));
-  halo.rotation.x = -Math.PI / 2; halo.position.y = -2.04; halo.renderOrder = 0; base.add(halo); base.userData.halo = halo;
-  // 星空 630 点
+  halo.rotation.x = -Math.PI / 2; halo.position.y = -2.04; halo.renderOrder = 0; halo.visible = false; base.add(halo); base.userData.halo = halo;
+  // 星空 2600 点
   const R = rng(99), n = 2600, pos = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     let th = R() * TAU, ph = Math.acos(R() * 1.6 - 0.6);
@@ -2642,9 +3213,26 @@ function addCabinet(B) {
     pos[i*3] = Math.sin(ph) * Math.cos(th) * r; pos[i*3+1] = Math.cos(ph) * r * 0.8 + 6; pos[i*3+2] = Math.sin(ph) * Math.sin(th) * r;
   }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xdcd6ff, size: 0.095 * 2.6, transparent: true, opacity: 0.86, map: haloTex, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  bgStarsMat = new THREE.PointsMaterial({ color: 0xdcd6ff, size: 0.095 * 2.6, transparent: true, opacity: 0.86, map: haloTex, depthWrite: false, fog: false, blending: THREE.AdditiveBlending });
+  const stars = new THREE.Points(sg, bgStarsMat);
   stars.renderOrder = -1; scene.add(stars);
   [pg, col, ring, ring2, joint].forEach(g => g.dispose());
+}
+
+function applyStageBackdrop(def, st) {
+  const th = getStageTheme(def);
+  const bg = th.sky;
+  document.body.style.background = `radial-gradient(120% 95% at 50% 34%, ${bg[0]} 0%, ${bg[1]} 36%, ${bg[2]} 70%, ${bg[3]} 100%)`;
+  skyU.uBg0.value.set(bg[0]); skyU.uBg1.value.set(bg[1]); skyU.uBg2.value.set(bg[2]); skyU.uBg3.value.set(bg[3]);
+  renderer.setClearColor(bg[3], 1);
+  scene.fog.color.set(th.fog);
+  if (bgStarsMat) bgStarsMat.color.setHex(th.stars);
+  drawPlatformTexture(def, st && st.lanternXZ);
+  drawCelestialTexture(def);
+  const root = document.documentElement.style;
+  root.setProperty('--stage-accent', th.uiAccent);
+  root.setProperty('--stage-bg0', th.uiBg[0]);
+  root.setProperty('--stage-bg1', th.uiBg[1]);
 }
 
 // ---------------------------------------------------------------- 歯車（全ステージ共通の InstancedMesh：金 1 + 青緑 1）
@@ -2773,10 +3361,10 @@ function buildStage(def) {
   S = st;
   const L = C.L, solid = subtract([[0, L]], [...C.gaps.map(g => [g.s0, g.s1]), ...C.bowls.map(w => [w.sIn - BOWL.CHUTE, w.sStub]),
     ...C.lifts.map(w => [w.sIn, w.sOut]), ...C.gearTrains.map(w => [w.sIn - GEARC.WAIT, w.sOut + GEARC.WAIT]),
-    ...C.wheels.map(w => [w.sIn, w.sOut]), ...C.bridges.map(w => [w.s0, w.s1]), ...(C.balance ? C.balance.arms.map(a => [a.s0, a.s1]) : [])]);   // S10：天秤の腕の溝は buildBalance（腕と一緒に動く）   // S7：ボウルの入口の溝の端は buildBowl で円に合わせて作る／S8：リフト・歯車の区間／S9：ホイールの中・開閉ブリッジの橋桁（buildBridge）
+    ...C.wheels.map(w => [w.sIn, w.sOut]), ...C.bridges.map(w => [w.s0, w.s1]), ...(C.balance ? C.balance.arms.map(a => [a.s0, a.s1]) : []), ...(C.tower ? [[C.tower.s0, C.tower.s1]] : [])]);   // S11：塔と一緒に動く区間は buildTowerS11   // S10：天秤の腕の溝は buildBalance（腕と一緒に動く）   // S7：ボウルの入口の溝の端は buildBowl で円に合わせて作る／S8：リフト・歯車の区間／S9：ホイールの中・開閉ブリッジの橋桁（buildBridge）
   const solidG = C.rails2.length ? subtract(solid, C.rails2.map(w => [w.s0, w.s1])) : solid;   // S8：2本レールの区間はガラス・管・横棒の代わりにレール（buildRails2）
-  const rimMat = def.theme === 'spring' ? MAT.rose : def.theme === 'autumn' ? MAT.copper : MAT.gold, railMat = def.theme === 'spring' ? MAT.gold : def.theme === 'summer' ? MAT.chrome : def.theme === 'autumn' ? MAT.brassOld : MAT.lightGold;
-  const innerMat = def.theme === 'autumn' ? MAT.amberLac : MAT.teal;   // S10：内側の管・横棒は琥珀漆（ほかのステージは群青漆のまま）   // S8：春のパレット（ローズゴールドの枠・真鍮のレール）／S9：夏（クロームのレール）
+  const rimMat = def.theme === 'spring' ? MAT.rose : def.theme === 'autumn' ? MAT.copper : def.theme === 'winter' ? MAT.ironB : MAT.gold, railMat = def.theme === 'spring' ? MAT.gold : def.theme === 'summer' ? MAT.chrome : def.theme === 'autumn' ? MAT.brassOld : def.theme === 'winter' ? MAT.silverW : MAT.lightGold;
+  const innerMat = def.theme === 'autumn' ? MAT.amberLac : def.theme === 'winter' ? MAT.ironLac : MAT.teal, barMat = def.theme === 'winter' ? MAT.ironB : MAT.oxid;   // S11：内側の管・横棒は黒鉄の漆、縦棒は黒鉄   // S10：内側の管・横棒は琥珀漆（ほかのステージは群青漆のまま）   // S8：春のパレット（ローズゴールドの枠・真鍮のレール）／S9：夏（クロームのレール）
   // S9：天の川の区間はガラス・内側の管・横棒の代わりに銀のローラー（buildRiver）。ホイールのポケットの所（最後の 0.2）はガラスの代わりに三日月の受け（buildWheel）。定義の無いステージでは solidG と同じ
   // 改善1：落とし戸（S8）・穴あき星図板（S9）の区間も、ガラス・内側の管・横棒の代わりに板（buildTrapdoors・buildHolePlate）
   const solidW = (C.rivers.length || C.wheels.length || C.trapdoors.length || C.holePlates.length) ? subtract(solidG, [...C.rivers.map(w => [w.s0, w.s1]), ...C.wheels.map(w => [w.sIn - 0.2, w.sIn]), ...C.trapdoors.map(w => [w.s0, w.s1]), ...C.holePlates.map(w => [w.s0, w.s1])]) : solidG;
@@ -2785,6 +3373,9 @@ function buildStage(def) {
   // --- 外枠の金チューブ・内側の青緑チューブ
   if (def.theme === 'autumn') {   // S10：外枠は層ごとの銅（1層 焼けた赤銅・2層 アンティーク銅・3層 古真鍮）
     for (const [a, b, m] of layerRangesAutumn(C, solidG)) for (const k of [-1, 1]) courseTube(B, C, m, a, b, fr => k * fr.half, -0.025, 0.042, 8);
+    for (const [a, b] of solidW) for (const k of [-1, 1]) courseTube(B, C, innerMat, a, b, fr => k * fr.half * 0.25, -0.045, 0.022, 6);
+  } else if (def.theme === 'winter') {   // S11：外枠は層ごとに 黒鉄（1層）→ いぶし銀（2層）→ 白銀（3層）。高い所ほど雪をかぶったように白く
+    for (const [a, b, m] of layerRangesWinter(C, solidG)) for (const k of [-1, 1]) courseTube(B, C, m, a, b, fr => k * fr.half, -0.025, 0.042, 8);
     for (const [a, b] of solidW) for (const k of [-1, 1]) courseTube(B, C, innerMat, a, b, fr => k * fr.half * 0.25, -0.045, 0.022, 6);
   } else if (def.theme !== 'summer') for (const [a, b] of solidG) for (const k of [-1, 1]) {
     courseTube(B, C, rimMat, a, b, fr => k * fr.half, -0.025, 0.042, 8);
@@ -2810,8 +3401,8 @@ function buildStage(def) {
   for (const [a, b] of solidW) for (let s = a + 0.12; s < b - 0.05; s += 0.5, cnt++) {
     C.frame(s, FR);
     const m = frameMatrix(FR, 0, -0.04); m.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)).multiply(new THREE.Matrix4().makeScale(1, FR.half * 2, 1));
-    B.add(cnt % 3 === 0 ? innerMat : MAT.oxid, barG, m);
-    for (const k of [-1, 1]) if (!C.isOpening(s, k) && !plateCutsPost(def, FR, k)) B.add(MAT.oxid, postG, frameMatrix(FR, k * FR.half, 0.05));
+    B.add(cnt % 3 === 0 ? innerMat : barMat, barG, m);
+    for (const k of [-1, 1]) if (!C.isOpening(s, k) && !plateCutsPost(def, FR, k)) B.add(barMat, postG, frameMatrix(FR, k * FR.half, 0.05));
   }
   barG.dispose(); postG.dispose();
 
@@ -2852,7 +3443,9 @@ function buildStage(def) {
     if ((def.melody || []).some(m => s > m.from * L - 0.4 && s < m.to * L + 0.4)) continue;
     if (C.wheels.some(w => s > w.sIn - 0.8 && s < w.sOut + 0.5) || C.bridges.some(w => s > w.s0 - 0.35 && s < w.s1 + 0.35)) continue;   // S9：ホイール（ポケット〜出口）・開閉ブリッジの橋桁には置かない              // S8 逆向き：鉄琴の直線には置かない（通過点の鈴が旋律に混ざらない）          // S8：リフト・歯車の受け渡しの区間には置かない
     if ([...C.trapdoors, ...C.holePlates].some(w => s > w.s0 - 0.35 && s < w.s1 + 0.35)) continue;   // 改善1：落とし戸・穴あき星図板の上には置かない
-    if (C.balance && (C.balance.arms.some(a => s > a.s0 - 0.35 && s < a.s1 + 0.35) || C.balance.weights.some(w => Math.abs(w.s - s) < 0.6))) continue;   // S10：天秤の腕（動く）・分銅の皿の上には置かない
+    if (C.balance && (C.balance.arms.some(a => s > a.s0 - 0.35 && s < a.s1 + 0.35) || C.balance.weights.some(w => Math.abs(w.s - s) < (w.pocket ? 0.78 : 0.6)))) continue;   // S10：天秤の腕（動く）・分銅の皿の上には置かない
+    if (C.slalomPins && C.slalomPins.some(p => Math.abs(p.s - s) < 0.45)) continue;   // S10改修：千鳥ピンの真横には通過点を置かない
+    if (C.tower && s > C.tower.s0 - 0.35 && s < C.tower.s1 + 0.35) continue;   // S11：動く塔の上には置かない（らせんのピンが代わりに鳴る）
     if (st.gates.some(g => Math.abs(g.s - s) < 0.3)) continue;
     if (cpS.length && s - cpS[cpS.length - 1] < 0.7) { if (st.gates.some(g => Math.abs(g.s - 0.55 - s) < 0.01)) cpS[cpS.length - 1] = s; continue; }
     cpS.push(s);
@@ -2945,11 +3538,13 @@ function buildStage(def) {
   for (const t of def.towers || []) buildTower(st, B, C, t);
   st.sweepers = (def.sweepers || []).map(w => buildSweeper(st, B, C, w));
   st.plates = (def.plates || []).map(w => buildPlate(st, B, C, w));
-  st.relays = (def.relays || []).map((p, k) => buildRelay(st, B, C, p, k));
+  st.twB = C.tower ? new Batch() : null;   // S11：塔と一緒に動く物の入れ物（中継の旗竿もここへ）
+  st.relays = (def.relays || []).map((p, k) => buildRelay(st, C.tower && p * C.L > C.tower.s0 && p * C.L < C.tower.s1 ? st.twB : B, C, p, k));
   st.bowls = C.bowls.map(w => buildBowl(st, B, C, w));   // S7：すり鉢ボウル
   st.lifts = C.lifts.map(w => buildLift(st, B, C, w));                  // S8：渦巻きチャージリフト
   st.gearTrains = C.gearTrains.map(w => buildGearTrain(st, B, C, w));   // S8：歯車の受け渡し
-  for (const w of C.rails2) buildRails2(st, B, C, w);                   // S8：間隔が変わる2本レール
+  for (const w of C.rails2) buildRails2(st, B, C, w, C.tower && w.s0 < C.tower.s1 && w.s1 > C.tower.s1 ? C.tower.s1 : undefined);   // S11：塔の上の分は buildTowerS11
+                  // S8：間隔が変わる2本レール
   st.melody = (def.melody || []).map(m => buildMelody(st, B, C, m));    // S8 逆向き：鉄琴の直線（見た目と音だけ）
   st.wheels = C.wheels.map(w => buildWheel(st, B, C, w));               // S9：星汲みホイール（乗り損ねの受け皿・戻り溝も）
   st.bridges = C.bridges.map(w => buildBridge(st, B, C, w));            // S9：カササギの開閉ブリッジ
@@ -2957,10 +3552,15 @@ function buildStage(def) {
   st.trapdoors = C.trapdoors.map(w => buildTrapdoors(st, B, C, w));     // 改善1（S8）：ゼンマイの落とし戸
   st.holePlates = C.holePlates.map(w => buildHolePlate(st, B, C, w));   // 改善1（S9）：穴あき星図板
   st.bal = C.balance ? buildBalance(st, B, C, def.balance) : null;      // S10：十字の大天秤（腕・ラッチの止め・分銅・四本柱の冠）
+  st.slalomPins = C.slalomPins && C.slalomPins.length ? buildSlalomPins(st, B, C) : [];   // S10改修：開幕の真鍮千鳥スラローム
+  st.slalomHits = 0;
+  if (def.theme === 'autumn') buildAutumnEdges(st, B, C);   // S10改修：危険側の鈍い赤銅縁・安全側の琥珀ガイド
+  st.tw = C.tower ? buildTowerS11(st, B, C, def.tower) : null;         // S11：中央の大らせん塔（動く溝・芯・冠と錠の灯り・ピン・受け・ロックの止め）
   // --- ゴールのカゴ
   buildBasket(st, B, C);
   // --- 置物
   buildOrnaments(st, B, def);
+  if (def.theme === 'autumn') st.autumnW = buildAutumnWorkshop(st, B, C);   // S10改修：傾き連動水準針・生活感小物・補助振り子・小歯車
   // --- 支柱（下のコースや置物とぶつからない所だけ）
   buildSupports(st, B, C);
 
@@ -3660,20 +4260,21 @@ function buildGearTrain(st, B, C, w) {
 function updateGearTrain(w) { w.meshes.forEach((m, i) => { m.rotation.y = -gearAngle(w, i); }); }
 
 // 間隔が変わる2本レール：ローズゴールドの 2 本のレール（玉がちょうど乗る高さ。間隔が広いほど玉は深く沈む）と、黒漆と真鍮の枕木
-function buildRails2(st, B, C, w) {
+function buildRails2(st, B, C, w, lo, hi) {
   const hOf = d => BALL_R - Math.sqrt(Math.max(0, (BALL_R + RAIL2_R) ** 2 - (d / 2) ** 2));
-  const a = w.s0 - 0.1, b = w.s1 + 0.1, n = Math.max(4, Math.ceil((b - a) / 0.08)), capG = new THREE.SphereGeometry(RAIL2_R * 1.5, 10, 8);
+  const a = Math.max(w.s0 - 0.1, lo ?? -1e9), b = Math.min(w.s1 + 0.1, hi ?? 1e9), n = Math.max(4, Math.ceil((b - a) / 0.08)), capG = new THREE.SphereGeometry(RAIL2_R * 1.5, 10, 8);
   for (const k of [-1, 1]) {
     const pts = [];
     for (let j = 0; j <= n; j++) { const s = a + (b - a) * j / n, d = C.railD(w, s); C.frame(s, FR); const u = k * d / 2, h = hOf(d); pts.push(new THREE.Vector3(FR.p[0] + FR.l[0] * u + FR.n[0] * h, FR.p[1] + FR.l[1] * u + FR.n[1] * h, FR.p[2] + FR.l[2] * u + FR.n[2] * h)); }
-    const tg = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n * 2, RAIL2_R, 8, false); B.add(MAT.rose, tg); tg.dispose();
-    for (const p of [pts[0], pts[pts.length - 1]]) B.put(MAT.gold, capG, p.x, p.y, p.z);
+    const tg = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n * 2, RAIL2_R, 8, false); B.add(C.def.theme === 'winter' ? MAT.silverW : MAT.rose, tg); tg.dispose();
+    if (lo == null) B.put(MAT.gold, capG, pts[0].x, pts[0].y, pts[0].z); if (hi == null) B.put(MAT.gold, capG, pts[pts.length - 1].x, pts[pts.length - 1].y, pts[pts.length - 1].z);
   }
   capG.dispose();
   const slG = new THREE.BoxGeometry(1, 0.035, 0.07); let j = 0;
   for (let s = w.s0 + 0.08; s < w.s1 - 0.04; s += 0.3, j++) {
+    if (s < a || s > b) continue;
     const d = C.railD(w, s); C.frame(s, FR);
-    const m = frameMatrix(FR, 0, hOf(d) - RAIL2_R - 0.02); m.multiply(new THREE.Matrix4().makeScale(d + 0.18, 1, 1)); B.add(j % 3 === 0 ? MAT.gold : MAT.navy, slG, m);
+    const m = frameMatrix(FR, 0, hOf(d) - RAIL2_R - 0.02); m.multiply(new THREE.Matrix4().makeScale(d + 0.18, 1, 1)); B.add(j % 3 === 0 ? (C.def.theme === 'winter' ? MAT.silverW : MAT.gold) : (C.def.theme === 'winter' ? MAT.ironB : MAT.navy), slG, m);
   }
   slG.dispose();
 }
@@ -3994,6 +4595,13 @@ function buildHolePlate(st, B, C, w) {
 }
 
 // S10：層ごとの外枠の銅：1層（高さ 1.2 未満）焼けた赤銅・2層（2.6 未満）アンティーク銅・3層 古真鍮。[a, b, 材質] の列
+// S11：層ごとの外枠：1層（高さ 1.2 未満）黒鉄・2層（3.0 未満）いぶし銀・3層 白銀。[a, b, 材質] の列
+function layerRangesWinter(C, ranges) {
+  const matAt = s => { const y = C.P[C.idx(s) * 3 + 1]; return y < 1.2 ? MAT.ironB : y < 3.0 ? MAT.silverD : MAT.silverW; };
+  const out = [];
+  for (const [a, b] of ranges) { let s0 = a, m0 = matAt(a); for (let s = a + 0.1; s < b; s += 0.1) { const m = matAt(s); if (m !== m0) { out.push([s0, s, m0]); s0 = s; m0 = m; } } out.push([s0, b, m0]); }
+  return out.filter(r => r[1] - r[0] > 0.02);
+}
 function layerRangesAutumn(C, ranges) {
   const matAt = s => { const y = C.P[C.idx(s) * 3 + 1]; return y < 1.2 ? MAT.copperDark : y < 2.6 ? MAT.copper : MAT.brassOld; };
   const out = [];
@@ -4029,7 +4637,7 @@ function balanceSet(state, k) {
   return true;
 }
 // 中継の復元・やり直し：その向きで止まった状態にすぐ戻す（動きも揺れも無し）
-function balanceSnap(state) { const bal = S.bal; bal.target = state; bal.pose = balPose(state); bal.latchT = -1e9; bal.moveT0 = -1e9; }
+function balanceSnap(state) { const bal = S.bal; bal.target = state; bal.pose = balPose(state); bal.latchT = -1e9; bal.moveT0 = -1e9; for (const w of bal.weights) if (w.w.pocket) { w.hold = 0; w.stage = bal.target === w.w.set ? 3 : 0; w.pulseT = -1e9; w.on = false; } }
 // 1 刻み（物理の時計）：目標の向きへ swingT 秒で倒れ、着いたらラッチが掛かる
 function updateBalance(dt) {
   const bal = S.bal, goal = balPose(bal.target);
@@ -4044,14 +4652,54 @@ function updateBalance(dt) {
   }
 }
 // stepGround の中（玉の位置 b.s・枠 FR が決まった後）：分銅の皿に乗ったら向きを決める／向きが合っていない腕の両端で止める
-function balanceStep(b) {
+function balanceStep(b, dt = CFG.DT, uNow = b.u) {
   const C = S.C, bal = S.bal, lim = BALC.LIM;
   for (let k = 0; k < bal.weights.length; k++) {
-    const w = bal.weights[k];
-    const on = b.s > w.w.s0 && b.s < w.w.s1;
-    if (on && !w.on) logEvent('weightOn', { k });
-    w.on = on;
-    if (on && G.state === 'playing') balanceSet(w.w.set, k);
+    const w = bal.weights[k], p = w.w.pocket;
+    if (!p) {
+      const on = b.s > w.w.s0 && b.s < w.w.s1;
+      if (on && !w.on) logEvent('weightOn', { k });
+      w.on = on;
+      if (on && G.state === 'playing') balanceSet(w.w.set, k);
+      continue;
+    }
+    // 案1：精密ポケット式分銅（脇の受け皿に乗り、約0.5秒重みを乗せると3段階の灯りと共に天秤切替）
+    const inP = b.s > w.w.s0 && b.s < w.w.s1 && (uNow * p.side) >= p.uMin;
+    if (inP && !w.on) {
+      logEvent('weightOn', { k, pocket: true });
+      if (bal.target !== w.w.set && G.state === 'playing') { Sound.play('brassTick', { step: 0 }); Haptic(6); }
+    }
+    w.on = inP;
+    if (bal.target === w.w.set) {
+      w.stage = 3; w.hold = p.holdT;
+      continue;
+    }
+    if (inP && G.state === 'playing') {
+      // 受け皿のわずかな窪み感（そっと乗せると収まりやすく、傾ければすぐ出られる）
+      const damp = Math.exp(-3.0 * dt);
+      b.v[0] *= damp; b.v[1] *= damp; b.v[2] *= damp;
+      const dsC = clamp(w.w.s - b.s, -0.3, 0.3), duC = clamp(p.side * p.uTarget - uNow, -0.25, 0.25);
+      for (let i = 0; i < 3; i++) b.v[i] += (dsC * FR.t[i] + duC * FR.l[i]) * 2.2 * dt;
+      w.hold += dt;
+      const st = w.hold >= p.holdT ? 3 : w.hold >= p.holdT * 0.62 ? 2 : w.hold >= p.holdT * 0.25 ? 1 : 0;
+      if (st > w.stage) {
+        w.stage = st;
+        if (st < 3) {
+          Sound.play('brassTick', { step: st }); Haptic(9);
+          const lp = w.stagePts[st - 1];
+          burst(lp[0], lp[1], lp[2], 10, [0xffd27a, 0xffffff, 0xff9a30], 0.9, 0.14, 0.4, 0.35);
+          logEvent('pocketStage', { k, stage: st, hold: +w.hold.toFixed(3) });
+        } else {
+          Sound.play('brassLatch'); Haptic([18, 35, 22]);
+          w.pulseT = G.time;
+          logEvent('pocketLatch', { k, set: w.w.set, hold: +w.hold.toFixed(3) });
+          balanceSet(w.w.set, k);
+        }
+      }
+    } else {
+      w.hold = Math.max(0, w.hold - dt * 2.5);
+      if (w.hold <= 0.01) w.stage = 0;
+    }
   }
   for (const arm of bal.arms) {
     if (balAligned(arm)) continue;
@@ -4089,15 +4737,30 @@ function buildBalance(st, B, C, bd) {
     for (const k of [-1, 1]) {
       courseTube(AB, C, MAT.copper, a.s0, a.s1, fr => k * fr.half, -0.025, 0.042, 8);
       courseTube(AB, C, MAT.amberLac, a.s0, a.s1, fr => k * fr.half * 0.25, -0.045, 0.022, 6);
-      courseTube(AB, C, MAT.brassOld, a.s0, a.s1, fr => k * fr.half, RAIL_TOP_H, RAIL_TOP_R, 8);
-      for (const s of [a.s0, a.s1]) { const p = cpt(C, s, k * C.half[C.idx(s)], RAIL_TOP_H); AB.put(MAT.brassOld, capG, p[0], p[1], p[2]); }
+      const armHoles = C.openings.filter(o => o.side === k && o.s1 > a.s0 && o.s0 < a.s1).map(o => [Math.max(a.s0, o.s0), Math.min(a.s1, o.s1)]);
+      if (!armHoles.length) {
+        courseTube(AB, C, MAT.brassOld, a.s0, a.s1, fr => k * fr.half, RAIL_TOP_H, RAIL_TOP_R, 8);
+        for (const s of [a.s0, a.s1]) { const p = cpt(C, s, k * C.half[C.idx(s)], RAIL_TOP_H); AB.put(MAT.brassOld, capG, p[0], p[1], p[2]); }
+      } else {
+        for (const [ra, rb] of subtract([[a.s0, a.s1]], armHoles)) {
+          courseTube(AB, C, MAT.brassOld, ra, rb, fr => k * fr.half, RAIL_TOP_H, RAIL_TOP_R, 8);
+          for (const s of [ra, rb]) { const p = cpt(C, s, k * C.half[C.idx(s)], RAIL_TOP_H); AB.put(MAT.brassOld, capG, p[0], p[1], p[2]); }
+        }
+        // 腕B の短開口の危険側縁（鈍い赤銅）＋ 反対安全側の琥珀鋲
+        const bdg = new THREE.SphereGeometry(0.026, 8, 6);
+        for (const [oa, ob] of armHoles) {
+          courseTube(AB, C, MAT.copperWarn, oa, ob, fr => k * (fr.half - 0.012), 0.004, 0.022, 6, { noShadow: true });
+          for (let s2 = oa + 0.18; s2 <= ob - 0.12; s2 += 0.36) { const q = cpt(C, s2, -k * (C.half[C.idx(s2)] - 0.05), 0.02); AB.put(MAT.amber, bdg, q[0], q[1], q[2], 0, 0, 0, 1, 0.6, 1, { noShadow: true }); }
+        }
+        bdg.dispose();
+      }
     }
     let cnt = 0;
     for (let s = a.s0 + 0.12; s < a.s1 - 0.05; s += 0.5, cnt++) {
       C.frame(s, FR);
       const m = frameMatrix(FR, 0, -0.04); m.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)).multiply(new THREE.Matrix4().makeScale(1, FR.half * 2, 1));
       AB.add(cnt % 3 === 0 ? MAT.amberLac : MAT.oxid, barG, m);
-      for (const k of [-1, 1]) AB.add(MAT.oxid, postG, frameMatrix(FR, k * FR.half, 0.05));
+      for (const k of [-1, 1]) if (!C.isOpening(s, k)) AB.add(MAT.oxid, postG, frameMatrix(FR, k * FR.half, 0.05));
     }
     // 梁（トラス）：下弦の管と、外枠から下弦へ斜めの支柱
     courseTube(AB, C, MAT.copperDark, a.s0 + 0.12, a.s1 - 0.12, 0, -0.34, 0.05, 8);
@@ -4148,35 +4811,92 @@ function buildBalance(st, B, C, bd) {
   const bellProf = [[0, 0.16], [0.03, 0.16], [0.035, 0.13], [0.022, 0.11], [0.05, 0.09], [0.085, 0.02], [0.095, -0.05], [0.09, -0.07], [0, -0.075]].map(q => new THREE.Vector2(q[0], q[1]));
   const bellG = new THREE.LatheGeometry(bellProf, 20);
   for (let k = 0; k < C.balance.weights.length; k++) {
-    const w = C.balance.weights[k];
-    // 皿：溝の床に銅の板（玉が乗ると少し沈む）
-    const pg = courseRibbon(null, C, w.s0, w.s1, null, 0.008, 0.84); pg.deleteAttribute('uv');
-    const pan = new THREE.Mesh(pg, MAT.copper); pan.receiveShadow = true; stageRoot.add(pan);
-    // 縁の輪（皿の前後の真鍮の線）
-    for (const s of [w.s0, w.s1]) { C.frame(s, FR); const g = new THREE.BoxGeometry(2 * FR.half * 0.86, 0.012, 0.03); B.add(MAT.brassOld, g, frameMatrix(FR, 0, 0.012), { noShadow: true }); g.dispose(); }
-    // 支柱は開口部の無い側（右）。柱の上から外へ腕を出し、鎖で分銅を吊る。皿から柱へ梃子の棒
-    C.frame(w.s, FR); const side = C.isOpening(w.s, 1) ? -1 : 1, u = side * (FR.half + 0.2);
-    const foot = cpt(C, w.s, u, -0.06), top = cpt(C, w.s, u, 0.86);
-    B.rod(MAT.copper, foot, top, 0.03, 10);
-    const tip = cpt(C, w.s, u + side * 0.2, 0.86); B.rod(MAT.copperDark, top, tip, 0.018, 6);
-    const pul = new THREE.TorusGeometry(0.045, 0.012, 6, 16); B.add(MAT.brassOld, pul, frameMatrix(FR, u + side * 0.2, 0.83)); pul.dispose();
-    B.rod(MAT.copperDark, cpt(C, w.s, side * FR.half * 0.7, 0.0), cpt(C, w.s, u, 0.12), 0.014, 5);
-    const lpp = cpt(C, w.s, u, 0.93); B.put(MAT.white, capG, lpp[0], lpp[1], lpp[2], 0, 0, 0, 1, 1, 1, { noShadow: true });
-    const glow = addGlow(lpp[0], lpp[1], lpp[2], 0xffb050, 0.55);
+    const w = C.balance.weights[k], p = w.pocket;
+    if (!p) {
+      // 従来式（S11 など）
+      const pg = courseRibbon(null, C, w.s0, w.s1, null, 0.008, 0.84); pg.deleteAttribute('uv');
+      const pan = new THREE.Mesh(pg, MAT.copper); pan.receiveShadow = true; stageRoot.add(pan);
+      for (const s of [w.s0, w.s1]) { C.frame(s, FR); const g = new THREE.BoxGeometry(2 * FR.half * 0.86, 0.012, 0.03); B.add(MAT.brassOld, g, frameMatrix(FR, 0, 0.012), { noShadow: true }); g.dispose(); }
+      C.frame(w.s, FR); const side = C.isOpening(w.s, 1) ? -1 : 1, u = side * (FR.half + 0.2);
+      const foot = cpt(C, w.s, u, -0.06), top = cpt(C, w.s, u, 0.86);
+      B.rod(MAT.copper, foot, top, 0.03, 10);
+      const tip = cpt(C, w.s, u + side * 0.2, 0.86); B.rod(MAT.copperDark, top, tip, 0.018, 6);
+      const pul = new THREE.TorusGeometry(0.045, 0.012, 6, 16); B.add(MAT.brassOld, pul, frameMatrix(FR, u + side * 0.2, 0.83)); pul.dispose();
+      B.rod(MAT.copperDark, cpt(C, w.s, side * FR.half * 0.7, 0.0), cpt(C, w.s, u, 0.12), 0.014, 5);
+      const lpp = cpt(C, w.s, u, 0.93); B.put(MAT.white, capG, lpp[0], lpp[1], lpp[2], 0, 0, 0, 1, 1, 1, { noShadow: true });
+      const glow = addGlow(lpp[0], lpp[1], lpp[2], 0xffb050, 0.55);
+      const bell = new THREE.Mesh(bellG, MAT.brassOld); bell.castShadow = true; stageRoot.add(bell);
+      const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 1, 4), MAT.oxid); stageRoot.add(chain);
+      st.footprints.push({ x: foot[0], z: foot[2], r: 0.04, top: top[1] + 0.05, bottom: foot[1] - 0.02, kind: 'weightPost' });
+      st.footprints.push({ x: tip[0], z: tip[2], r: 0.1, top: tip[1], bottom: tip[1] - 0.6, kind: 'weightBell' });
+      bal.weights.push({ w, pan, panBase: 0, tip, bell, chain, glow, on: false, drop: 0, n: FR.n.slice(), k });
+      continue;
+    }
+    // 案1：精密ポケット式分銅（脇へ膨らんだ受け皿・真鍮標的輪・3段階の灯り・腕入口への導光管）
+    const side = p.side;
+    C.frame(w.s, FR);
+    const uIn = side * (p.uMin - 0.05), uOut = side * (FR.half - 0.04), uMid = (uIn + uOut) / 2, panW = Math.abs(uOut - uIn);
+    const panLen = w.s1 - w.s0;
+    const panG = new THREE.BoxGeometry(panW, 0.022, panLen);
+    const rimG = new THREE.TorusGeometry(Math.min(panW, panLen) * 0.34, 0.015, 8, 28); rimG.rotateX(Math.PI / 2);
+    const panGrp = new THREE.Group(); stageRoot.add(panGrp);
+    const pm = frameMatrix(FR, uMid, 0.004);
+    const panMesh = new THREE.Mesh(panG, MAT.copper); panMesh.applyMatrix4(pm); panMesh.receiveShadow = true; panGrp.add(panMesh);
+    const ringMesh = new THREE.Mesh(rimG, MAT.brassBright); ringMesh.applyMatrix4(frameMatrix(FR, side * p.uTarget, 0.018)); panGrp.add(ringMesh);
+    // 受け皿の前後＆内縁の真鍮トリム（本線と受け皿の境目がくっきり見える）
+    for (const ds of [-panLen / 2, panLen / 2]) { const g = new THREE.BoxGeometry(panW + 0.04, 0.014, 0.028); B.add(MAT.brassBright, g, frameMatrix(FR, uMid, 0.014, 1).multiply(_m4.makeTranslation(0, 0, ds)), { noShadow: true }); g.dispose(); }
+    { const g = new THREE.BoxGeometry(0.024, 0.012, panLen + 0.04); B.add(MAT.brassBright, g, frameMatrix(FR, uIn, 0.012), { noShadow: true }); g.dispose(); }
+    // 支柱・滑車・吊り分銅（カメラ側のポケット脇）
+    const u = side * (FR.half + 0.20);
+    const foot = cpt(C, w.s, u, -0.06), top = cpt(C, w.s, u, 0.88);
+    B.rod(MAT.copper, foot, top, 0.032, 10);
+    const tip = cpt(C, w.s, u + side * 0.20, 0.88); B.rod(MAT.copperDark, top, tip, 0.018, 6);
+    const pul = new THREE.TorusGeometry(0.046, 0.012, 6, 16); B.add(MAT.brassOld, pul, frameMatrix(FR, u + side * 0.20, 0.85)); pul.dispose();
+    B.rod(MAT.copperDark, cpt(C, w.s, side * (FR.half - 0.06), 0.0), cpt(C, w.s, u, 0.12), 0.015, 5);
+    const lpp = cpt(C, w.s, u, 0.95); B.put(MAT.white, capG, lpp[0], lpp[1], lpp[2], 0, 0, 0, 1, 1, 1, { noShadow: true });
+    const glow = addGlow(lpp[0], lpp[1], lpp[2], 0xffb050, 0.65);
+    // 3段階の琥珀ゲージ灯（支柱の正面に縦3連）
+    const stageLamps = [], stagePts = [], stageGlows = [];
+    const sBulbG = new THREE.SphereGeometry(0.046, 12, 8), sBezG = new THREE.TorusGeometry(0.052, 0.011, 6, 16);
+    for (let si = 0; si < 3; si++) {
+      const hy = 0.26 + si * 0.19;
+      const lp = cpt(C, w.s, u - side * 0.055, hy);
+      B.add(MAT.brassOld, sBezG, frameMatrix(FR, u - side * 0.055, hy).multiply(_m4.makeRotationY(Math.PI / 2)));
+      const lm = new THREE.Mesh(sBulbG, new THREE.MeshBasicMaterial({ color: BAL_LAMP_DIM.clone() })); lm.material.__own = true;
+      lm.position.set(lp[0], lp[1], lp[2]); stageRoot.add(lm);
+      const sg = addGlow(lp[0], lp[1], lp[2], 0xffbe50, 0.42); sg.k = 0.0;
+      stageLamps.push(lm); stagePts.push(lp); stageGlows.push(sg);
+    }
+    sBulbG.dispose(); sBezG.dispose();
+    // 受け皿の床上の誘導灯（未作動のとき琥珀に脈打つ）
+    const panC = cpt(C, w.s, side * p.uTarget, 0.06);
+    const panGlow = addGlow(panC[0], panC[1], panC[2], 0xffb648, 0.55);
+    // 腕の入口へ伸びる真鍮の連動管と、切替時に走る光球
+    const armT = bal.arms.find(a => a.trav === w.set);
+    const conduit = [];
+    if (armT) {
+      for (let i = 0; i <= 8; i++) {
+        const sc = lerp(w.s, armT.a.s0 - 0.04, i / 8);
+        C.frame(sc, FR2);
+        conduit.push(cpt(C, sc, side * (FR2.half + 0.11), 0.10, FR2));
+      }
+      for (let i = 0; i < conduit.length - 1; i++) B.rod(MAT.brassOld, conduit[i], conduit[i + 1], 0.015, 6);
+    }
+    const pulseGlow = addGlow(panC[0], panC[1], panC[2], 0xffe298, 0.72); pulseGlow.k = 0;
     const bell = new THREE.Mesh(bellG, MAT.brassOld); bell.castShadow = true; stageRoot.add(bell);
     const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 1, 4), MAT.oxid); stageRoot.add(chain);
-    st.footprints.push({ x: foot[0], z: foot[2], r: 0.04, top: top[1] + 0.05, bottom: foot[1] - 0.02, kind: 'weightPost' });
+    st.footprints.push({ x: foot[0], z: foot[2], r: 0.05, top: top[1] + 0.05, bottom: foot[1] - 0.02, kind: 'weightPost' });
     st.footprints.push({ x: tip[0], z: tip[2], r: 0.1, top: tip[1], bottom: tip[1] - 0.6, kind: 'weightBell' });
-    bal.weights.push({ w, pan, panBase: 0, tip, bell, chain, glow, on: false, drop: 0, n: FR.n.slice(), k });
+    bal.weights.push({ w, pan: panGrp, panBase: 0, tip, bell, chain, glow, panGlow, stageLamps, stagePts, stageGlows, conduit, pulseGlow, pulseT: -1e9, on: false, hold: 0, stage: bal.target === w.set ? 3 : 0, drop: 0, n: FR.n.slice(), k });
   }
   bellG.dispose();
   // ---- 四本柱の冠（腕の軸を吊り、上に月の盃）。柱は腕ごとに軸の向き（腕に直交）で支点から PILLAR_R
-  const Hc = C.P[C.M * 3 + 1] - 0.26, HcR = Hc - 0.25;   // 盃の台（buildBasket の y0）の高さ。冠の環は台より 0.25 下（最後の溝が環の上を越えるため）
+  const Hc = bd.crownH != null ? bd.crownH : C.P[C.M * 3 + 1] - 0.26, HcR = Hc - 0.25;   // S11：冠の高さを定義で指定（S10 は盃の台の高さ）   // 盃の台（buildBasket の y0）の高さ。冠の環は台より 0.25 下（最後の溝が環の上を越えるため）
   bal.crownH = Hc; bal.crownRingH = HcR;
   const colG = new THREE.CylinderGeometry(0.062, 0.075, 1, 14), ftG = new THREE.CylinderGeometry(0.17, 0.2, 0.08, 18), ringG = new THREE.TorusGeometry(0.085, 0.016, 6, 18);
   const pillars = [];
   for (const arm of bal.arms) for (const k of [-1, 1]) {
-    const x = hubXZ[0] + arm.axis.x * k * BALC.PILLAR_R, z = hubXZ[1] + arm.axis.z * k * BALC.PILLAR_R;
+    const PR_ = bd.pillarR || BALC.PILLAR_R, x = hubXZ[0] + arm.axis.x * k * PR_, z = hubXZ[1] + arm.axis.z * k * PR_;
     B.put(MAT.copper, colG, x, (Y0 + HcR) / 2, z, 0, 0, 0, 1, HcR - Y0, 1); B.put(MAT.navy, ftG, x, Y0 + 0.04, z);
     for (let y = Y0 + 0.45; y < HcR - 0.2; y += 0.55) B.put(MAT.brassOld, ringG, x, y, z, Math.PI / 2);
     // 軸受け（腕の支点の高さ − 0.16）と、そこから腕の軸受けの円盤までの軸
@@ -4188,10 +4908,10 @@ function buildBalance(st, B, C, bd) {
   }
   [colG, ftG, ringG].forEach(g => g.dispose());
   // 冠：柱の頭をつなぐ銅の環と、古真鍮の細い環（琥珀の玉）、柱から中央の台への梁、中央の台（盃の台座）
-  const crown = new THREE.TorusGeometry(BALC.PILLAR_R, 0.05, 10, 96); B.put(MAT.copper, crown, hubXZ[0], HcR, hubXZ[1], Math.PI / 2); crown.dispose();
-  const crown2 = new THREE.TorusGeometry(BALC.PILLAR_R + 0.06, 0.018, 6, 96); B.put(MAT.brassOld, crown2, hubXZ[0], HcR + 0.075, hubXZ[1], Math.PI / 2); crown2.dispose();
+  const PRc = bd.pillarR || BALC.PILLAR_R; const crown = new THREE.TorusGeometry(PRc, 0.05, 10, 96); B.put(MAT.copper, crown, hubXZ[0], HcR, hubXZ[1], Math.PI / 2); crown.dispose();
+  const crown2 = new THREE.TorusGeometry(PRc + 0.06, 0.018, 6, 96); B.put(MAT.brassOld, crown2, hubXZ[0], HcR + 0.075, hubXZ[1], Math.PI / 2); crown2.dispose();
   const bead = new THREE.SphereGeometry(0.045, 10, 8);
-  for (let i = 0; i < 20; i++) { const an = i / 20 * TAU; B.put(MAT.amber, bead, hubXZ[0] + Math.cos(an) * (BALC.PILLAR_R + 0.06), HcR + 0.075, hubXZ[1] + Math.sin(an) * (BALC.PILLAR_R + 0.06)); }
+  for (let i = 0; i < 20; i++) { const an = i / 20 * TAU; B.put(MAT.amber, bead, hubXZ[0] + Math.cos(an) * (PRc + 0.06), HcR + 0.075, hubXZ[1] + Math.sin(an) * (PRc + 0.06)); }
   bead.dispose();
   for (const [x, z] of pillars) { const d = Math.hypot(x - hubXZ[0], z - hubXZ[1]); B.rod(MAT.copperDark, [x, HcR, z], [hubXZ[0] + (x - hubXZ[0]) / d * 0.72, Hc - 0.05, hubXZ[1] + (z - hubXZ[1]) / d * 0.72], 0.035, 8); const cp = new THREE.SphereGeometry(0.075, 14, 10); B.put(MAT.amber, cp, x, HcR + 0.06, z); cp.dispose(); }   // 柱の頭から中央の台の縁へ、斜めに上がる梁
   const plat = new THREE.CylinderGeometry(0.8, 0.72, 0.07, 48); B.put(MAT.copperDark, plat, hubXZ[0], Hc - 0.035, hubXZ[1]); plat.dispose();
@@ -4241,20 +4961,620 @@ function updateBalanceLook(bal, dt) {
     w.chain.position.set(w.tip[0] + sway / 2, (w.tip[1] + by + 0.16) / 2, w.tip[2]); w.chain.scale.set(1, Math.max(0.01, w.tip[1] - by - 0.16), 1); w.chain.rotation.z = -Math.atan2(sway, w.tip[1] - by);
     const press = w.on && G.ball.mode === 'ground' ? 1 : 0; w.panBase += (press - w.panBase) * (dt > 0 ? 1 - Math.exp(-14 * dt) : 1);
     w.pan.position.set(-w.n[0] * 0.022 * w.panBase, -w.n[1] * 0.022 * w.panBase, -w.n[2] * 0.022 * w.panBase);
-    if (engaged) { w.glow.r = 1; w.glow.g = 0.86; w.glow.b = 0.62; w.glow.k = 0.75; } else { w.glow.r = 1; w.glow.g = 0.62; w.glow.b = 0.22; w.glow.k = 0.55 + 0.45 * Math.sin(t * 3 + w.k); }
+    if (engaged) { w.glow.r = 1; w.glow.g = 0.86; w.glow.b = 0.62; w.glow.k = 0.75; } else { w.glow.r = 1; w.glow.g = 0.62; w.glow.b = 0.22; w.glow.k = 0.65 + 0.45 * Math.sin(t * 3.2 + w.k); }
+    if (w.w.pocket && w.stageLamps) {
+      const stg = engaged ? 3 : w.stage;
+      for (let si = 0; si < 3; si++) {
+        const lit = si < stg;
+        w.stageLamps[si].material.color.setRGB(lit ? 1.0 : 0.24, lit ? (si === 2 ? 0.92 : 0.72) : 0.10, lit ? (si === 2 ? 0.55 : 0.22) : 0.04);
+        w.stageGlows[si].k = lit ? (engaged ? 0.7 : 1.15) : 0;
+      }
+      w.panGlow.k = engaged ? 0.18 : (w.on ? 1.15 : 0.65 + 0.35 * Math.sin(t * 3.8 + w.k));
+      // 連動管を走る琥珀の光パルス
+      const dtP = t - w.pulseT;
+      if (w.conduit && w.conduit.length > 1 && dtP >= 0 && dtP < 0.75) {
+        const f = clamp(dtP / 0.75, 0, 1) * (w.conduit.length - 1), ii = Math.min(w.conduit.length - 2, Math.floor(f)), fr = f - ii;
+        const a = w.conduit[ii], b2 = w.conduit[ii + 1];
+        w.pulseGlow.x = lerp(a[0], b2[0], fr); w.pulseGlow.y = lerp(a[1], b2[1], fr); w.pulseGlow.z = lerp(a[2], b2[2], fr);
+        w.pulseGlow.k = 1.6 * (1 - 0.3 * (dtP / 0.75));
+      } else if (w.pulseGlow) w.pulseGlow.k = 0;
+    }
   }
   const p = bal.pose, e = p * p * (3 - 2 * p);
   bal.needle.rotation.set(0.16 * (e - 0.5), 0, 0.16 * (e - 0.5));
   bal.crownGlow.k = 0.6 + 0.15 * Math.sin(t * 1.3);
 }
-// お手本：向きが合っていない腕の入口の手前で止まって待つ（止めが開いたら進む）
+// お手本：ポケット分銅なら皿へ寄せて約0.5秒保持（通り過ぎていれば戻って押す）／向きが合っていない腕の入口の手前で止まって待つ
 function demoBalance(b, vd) {
-  for (const arm of S.bal.arms) {
+  const bal = S.bal;
+  let uLane = null;
+  for (const w of bal.weights) {
+    const p = w.w.pocket; if (!p || bal.target === w.w.set) continue;
+    const arm = bal.arms.find(a => a.trav === w.w.set);
+    const sMax = arm ? arm.a.s0 + 0.15 : w.w.s1 + 2.0;
+    if (b.s > w.w.s - 2.6 && b.s < sMax) {
+      uLane = p.side * p.uTarget;
+      const ds = w.w.s - b.s;
+      if (ds > 0.14) vd = Math.min(vd, Math.sqrt(2 * 1.6 * ds) + 0.08);
+      else if (ds < -0.14) vd = clamp(ds * 2.4, -1.6, -0.35);
+      else vd = ds * 2.4;
+      return { vd, uLane };
+    }
+  }
+  for (const arm of bal.arms) {
     const dist = arm.a.s0 - b.s;
     if (dist < -0.05 || dist > 4.0 || balAligned(arm)) continue;
     vd = Math.min(vd, dist > 0.62 ? Math.sqrt(2 * 2.2 * (dist - 0.62)) : 0);
   }
-  return vd;
+  return { vd, uLane };
+}
+
+// ================================================================ S11「冬の大三角」の仕掛け：中央の大らせん塔（ロック・せり上がり・らせんのピン）。定義（def.tower）が無いステージでは呼ばれない
+// 塔と一緒に動く区間（C.tower.s0〜s1：入口の渡り板・らせん・頂上の踊り場・ワイヤーレールの最初）は、上がり切った姿で中心線に焼き込んであり、見た目の塔（st.tw.group）だけを off（0〜dH）沈める。
+// 塔の状態は G.gateCount から決める（ゲートの記録は再開でも保たれる。3/3 なら上がり切り、やり直しなら沈む）。中継ごとには覚えない：3 つ目のゲートの後に落ちて手前の中継へ戻っても、
+// 解除のきっかけを失って詰むことが無いように。毎刻み「need 個そろったのに沈んでいれば上げ始める」と見る（passGate の一回きりに頼らない＝詰み防止の二重目）。
+// 上がり切って OPEN_DELAY 秒たつまでは、入口の渡り板の手前（動かない溝の端）にロックの止め。お手本は止めの手前で待つ。
+const TWC = { LIM: 0.07 + BALL_R * 0.9, OPEN_DELAY: 0.25, PIN_LEN: 0.2, PIN_RING: 0.9, GATE_LO: 0.15, GATE_HI: 0.58 };
+const TW_STAR = [new THREE.Color(0xff6a2a), new THREE.Color(0x8fd0ff), new THREE.Color(0xffd860)], TW_DIM = new THREE.Color(0.10, 0.11, 0.14), _twC = new THREE.Color();
+function towerUp(tw = S.tw) { return tw.phase === 'up' && G.time - tw.upT >= TWC.OPEN_DELAY; }
+// 中継の復元・やり直し：上がり切り（up）か沈んだまま（down）にすぐ戻す（動きは無し）
+function towerSnap(up) { const tw = S.tw; tw.phase = up ? 'up' : 'down'; tw.off = up ? 0 : tw.def.dH; tw.t = 0; tw.upT = up ? -1e9 : 1e9; }
+function towerRise() {
+  const tw = S.tw; tw.phase = 'rising'; tw.t = 0; tw.rises++;
+  Sound.play('rise', { T: tw.def.riseT }); Haptic([30, 60, 30]); Cam.kick = 0.6;
+  logEvent('towerRise', { gates: G.gateCount, progress: +(G.ball.s / S.C.L).toFixed(4) }); tw.log.push({ t: +G.time.toFixed(3), ev: 'rise' });
+}
+// 1 刻み（物理の時計）
+function updateTower(dt) {
+  const tw = S.tw;
+  if (tw.phase === 'down' && G.gateCount >= tw.def.need) towerRise();
+  if (tw.phase === 'rising') {
+    tw.t += dt; const k = clamp(tw.t / tw.def.riseT, 0, 1), e = k * k * (3 - 2 * k); tw.off = tw.def.dH * (1 - e);
+    if (k >= 1) { tw.phase = 'up'; tw.off = 0; tw.upT = G.time; Sound.play('door'); Sound.play('rail', { v: 3.2 }); Haptic([20, 50, 20]); Cam.kick = 0.35; logEvent('towerUp', {}); tw.log.push({ t: +G.time.toFixed(3), ev: 'up' }); }
+  }
+}
+// stepGround の中（玉の位置 b.s・枠 FR が決まった後）：上がり切るまでは、動く区間の入口（動かない溝の端）で止める
+function towerStep(b) {
+  const tw = S.tw, C = S.C, a = C.tower, lim = TWC.LIM;
+  if (!towerUp(tw)) {
+    if (b.s < a.s0 && b.s > a.s0 - lim && b.prevS <= a.s0 - lim + 0.12) {
+      b.s = a.s0 - lim; C.frame(b.s, FR); const vt = v3.dot(b.v, FR.t);
+      if (vt > 0) { for (let i = 0; i < 3; i++) b.v[i] -= 1.35 * vt * FR.t[i]; if (vt > 0.3) Sound.play('rail', { v: vt }); }
+      if (!tw.blocked) { tw.blocked = true; tw.blocks++; logEvent('towerBlock', { phase: tw.phase }); }
+    } else tw.blocked = false;
+    if (b.s > a.s0 && b.s < a.s1 && !tw.wrongNow) { tw.wrongNow = true; tw.wrong++; }   // 検証用：沈んだ（動いている）塔の区間に玉がいた（あってはならない）
+  }
+  if (!(b.s > a.s0 && b.s < a.s1)) tw.wrongNow = false;
+}
+// お手本：上がり切るまでは止めの手前で待つ
+function demoTower(b, vd) {
+  const a = S.C.tower; if (towerUp()) return vd;
+  const dist = a.s0 - b.s; if (dist < -0.05 || dist > 4.0) return vd;
+  return Math.min(vd, dist > 0.62 ? Math.sqrt(2 * 2.2 * (dist - 0.62)) : 0);
+}
+// らせんのピン：玉が前へ通ると順に鳴る（ドレミファソラシ × 3 ＋ 頂上のド）。玉の動きには触らない（見た目と音だけ）
+function pinsCheck(b) {
+  const tw = S.tw, P = tw.pins; if (!P.length || b.s < P[0].s - 0.5 || b.prevS > P[P.length - 1].s + 0.1) return;
+  for (const p of P) if (!p.played && b.prevS < p.s && b.s >= p.s) {
+    p.played = true; p.t = G.time; tw.plucks++;
+    Sound.play('pin', { step: p.step, last: p.i === P.length - 1 }); Haptic(3);
+    const q = p.tip; burst(q[0], q[1] + 0.03, q[2], 7, [0xe8f6ff, 0xffffff, TW_STAR[p.i % 3].getHex()], 0.7, 0.14, 0.45, 0.4);
+    tw.pinGlow.x = q[0]; tw.pinGlow.y = q[1]; tw.pinGlow.z = q[2]; tw.pinGlow.k = 1.3;
+    logEvent('pin', { i: p.i, step: p.step });
+  }
+}
+function pinsReset(s) { for (const p of S.tw.pins) if (p.s > s) { p.played = false; p.t = -9; } }
+
+function buildTowerS11(st, B, C, td) {
+  const TB = st.twB, A0 = C.tower.s0, A1 = C.tower.s1, SP0 = C.tower.sp0, SP1 = C.tower.sp1, Y0 = CFG.DECK_Y;
+  const tw = { def: td, phase: 'down', off: td.dH, t: 0, upT: 1e9, rises: 0, blocks: 0, wrong: 0, wrongNow: false, blocked: false, plucks: 0, log: [], pins: [] };
+  const grp = new THREE.Group(); grp.name = 'towerS11'; stageRoot.add(grp); tw.group = grp;
+  const cx = td.x, cz = td.z, colTop = td.y1 + 0.62;
+  // ---- 1 動く区間の溝（動かない溝と同じ作り：ガラス・層ごとの外枠・黒鉄の漆の管・白銀の上端レール・横棒と縦棒。ワイヤーレールの最初は buildRails2）
+  const solidT = subtract([[A0, A1]], C.rails2.map(w => [w.s0, w.s1]));
+  for (const [a, b] of solidT) courseRibbon(TB, C, a, b, MAT.deckGlass, 0, 1, { noShadow: true, renderOrder: 1 });
+  for (const [a, b, m] of layerRangesWinter(C, solidT)) for (const k of [-1, 1]) courseTube(TB, C, m, a, b, fr => k * fr.half, -0.025, 0.042, 8);
+  for (const [a, b] of solidT) for (const k of [-1, 1]) courseTube(TB, C, MAT.ironLac, a, b, fr => k * fr.half * 0.25, -0.045, 0.022, 6);
+  const capG = new THREE.SphereGeometry(0.045, 12, 8);
+  for (const k of [-1, 1]) {
+    const holes = C.openings.filter(o => o.side === k).map(o => [o.s0, o.s1]);
+    for (const [a, b] of subtract([[A0, A1]], holes)) {
+      courseTube(TB, C, MAT.silverW, a, b, fr => k * fr.half, RAIL_TOP_H, RAIL_TOP_R, 8);
+      for (const s of [a, b]) { if (Math.abs(s - A0) < 1e-6 || Math.abs(s - A1) < 1e-6) continue; const p = cpt(C, s, k * C.half[C.idx(s)], RAIL_TOP_H); TB.put(MAT.silverW, capG, p[0], p[1], p[2]); }
+    }
+  }
+  capG.dispose();
+  { const barG = new THREE.CylinderGeometry(0.035, 0.035, 1, 6), postG = new THREE.CylinderGeometry(0.022, 0.022, 0.18, 6); let cnt = 0;
+    for (const [a, b] of solidT) for (let s = a + 0.12; s < b - 0.05; s += 0.5, cnt++) {
+      C.frame(s, FR);
+      const m = frameMatrix(FR, 0, -0.04); m.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)).multiply(new THREE.Matrix4().makeScale(1, FR.half * 2, 1));
+      TB.add(cnt % 3 === 0 ? MAT.ironLac : MAT.ironB, barG, m);
+      for (const k of [-1, 1]) if (!C.isOpening(s, k)) TB.add(MAT.ironB, postG, frameMatrix(FR, k * FR.half, 0.05));
+    }
+    barG.dispose(); postG.dispose(); }
+  for (const w of C.rails2) if (w.s0 < A1 && w.s1 > A0) buildRails2(st, TB, C, w, undefined, A1);
+  // ---- 2 芯（黒鉄の柱。盤の下まで続く＝沈んでいる間は盤の下に隠れる）と白銀の帯
+  { const g = new THREE.CylinderGeometry(0.22, 0.3, colTop - (Y0 - 0.3), 24); TB.put(MAT.ironB, g, cx, (colTop + Y0 - 0.3) / 2, cz); g.dispose();
+    const r = new THREE.TorusGeometry(0.265, 0.024, 8, 28); for (let y = Y0 + 0.4; y < colTop - 0.25; y += 0.55) TB.put(MAT.silverW, r, cx, y, cz, Math.PI / 2); r.dispose(); }
+  st.footprints.push({ x: cx, z: cz, r: 0.32, top: colTop + 0.9, kind: 'towerCore' });
+  // ---- 3 らせんを支える腕（芯から溝の内側の縁へ。1/8 周ごと）と、溝の下の梁
+  const inSide = s => { C.frame(s, FR2); return Math.sign((cx - FR2.p[0]) * FR2.l[0] + (cz - FR2.p[2]) * FR2.l[2]) || -1; };
+  for (let i = 0; i <= 24; i++) {
+    const s = SP0 + (SP1 - SP0) * i / 24, k = inSide(s); C.frame(s, FR);
+    const pIn = cpt(C, s, k * (FR.half + 0.03), -0.07), dx = pIn[0] - cx, dz = pIn[2] - cz, dl = Math.hypot(dx, dz);
+    const pc = [cx + dx / dl * 0.24, pIn[1] - 0.34, cz + dz / dl * 0.24];
+    TB.rod(MAT.ironB, pc, pIn, 0.024, 6);
+    TB.rod(MAT.silverD, [cx + dx / dl * 0.24, pIn[1] - 0.02, cz + dz / dl * 0.24], pIn, 0.012, 5);
+  }
+  // 渡り板の下の梁（芯から渡り板の先と北の点へ。入口は 1 周目の下、出口は 3 周目の上を通る）
+  for (const [sA, sB] of [[A0 + 0.25, SP0], [A1 - 0.25, SP1]]) for (const s of [sA, (sA + sB) / 2, sB]) {
+    const p = cpt(C, s, 0, -0.16), dx = p[0] - cx, dz = p[2] - cz, dl = Math.hypot(dx, dz);
+    TB.rod(MAT.ironB, [cx + dx / dl * 0.24, p[1] - 0.12, cz + dz / dl * 0.24], [p[0], p[1] - 0.02, p[2]], 0.026, 6);
+  }
+  // ---- 4 冠：白銀の雪の結晶（南を向いた 6 本の腕に枝）と、3 星の錠の灯り（ゲートを通るごとに灯る）
+  { const yS = colTop + 0.5;
+    const cap = new THREE.CylinderGeometry(0.42, 0.3, 0.1, 6); TB.put(MAT.silverW, cap, cx, colTop + 0.02, cz); cap.dispose();
+    const ring = new THREE.TorusGeometry(0.4, 0.025, 8, 36); TB.put(MAT.ironB, ring, cx, colTop + 0.08, cz, Math.PI / 2); ring.dispose();
+    TB.rod(MAT.silverW, [cx, colTop, cz], [cx, yS - 0.08, cz], 0.03, 8);
+    const arm = new THREE.BoxGeometry(0.04, 0.42, 0.03), twig = new THREE.BoxGeometry(0.03, 0.14, 0.025);
+    for (let k = 0; k < 6; k++) {
+      const a = k / 6 * TAU, ca = Math.cos(a), sa = Math.sin(a);
+      TB.put(MAT.silverW, arm, cx - sa * 0.21, yS + ca * 0.21, cz, 0, 0, a);
+      for (const f of [0.55, 0.8]) for (const sd of [-1, 1]) { const b2 = a + sd * 0.7; TB.put(MAT.silverW, twig, cx - sa * 0.42 * f - Math.sin(b2) * 0.05, yS + ca * 0.42 * f + Math.cos(b2) * 0.05, cz, 0, 0, b2); }
+    }
+    arm.dispose(); twig.dispose();
+    const hub = new THREE.OctahedronGeometry(0.08, 0); TB.put(MAT.frost, hub, cx, yS, cz, 0, 0, Math.PI / 4); hub.dispose();
+    tw.crownY = yS; tw.crownGlow = addGlow(cx, yS, cz, 0xcfe8ff, 1.1); tw.crownGlow.k = 0.25;
+    // 錠の灯り（3 星の色の玉。芯の頭のまわり、南西・南・南東）
+    const lg = new THREE.SphereGeometry(0.075, 14, 10);
+    tw.lamps = [0, 1, 2].map(i => { const a = Math.PI / 2 + (i - 1) * 0.75, x = cx + Math.cos(a) * 0.34, z = cz + Math.sin(a) * 0.34, m = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: TW_DIM.clone() })); m.material.__own = true; m.position.set(x, colTop + 0.17, z); grp.add(m); return m; });
+  }
+  st.footprints.push({ x: cx, z: cz, r: 0.5, top: colTop + 0.95, bottom: colTop - 0.1, kind: 'towerCrown' });
+  // ---- 5 らせんのピン（溝の内側の上端レールから溝の中へ突き出した白銀の櫛の歯。先に霜の玉）
+  const pd = C.def.pins;
+  if (pd) {
+    const N = pd.notes.length, s0 = pd.from * C.L, s1 = pd.to * C.L;
+    const tineG = new THREE.CylinderGeometry(0.011, 0.016, TWC.PIN_LEN, 6); tineG.rotateZ(Math.PI / 2);
+    const tipG = new THREE.SphereGeometry(0.026, 10, 8);
+    const tines = new THREE.InstancedMesh(tineG, MAT.silverW, N), tips = new THREE.InstancedMesh(tipG, MAT.frost, N), rivetG = new THREE.SphereGeometry(0.022, 8, 6);
+    tines.castShadow = true; tines.frustumCulled = tips.frustumCulled = false; grp.add(tines); grp.add(tips); tw.tines = tines; tw.tips = tips;
+    for (let i = 0; i < N; i++) {
+      const s = s0 + (i + 0.5) * (s1 - s0) / N, k = inSide(s); C.frame(s, FR);
+      const base = frameMatrix(FR, k * (FR.half - 0.01), 0.13);   // 付け根（内側の上端レールの少し下）
+      const tip = cpt(C, s, k * (FR.half - 0.01 - TWC.PIN_LEN), 0.13);
+      tw.pins.push({ i, s, step: pd.notes[i], k, base, tip, played: false, t: -9, on: false });
+      TB.put(MAT.silverD, rivetG, ...cpt(C, s, k * (FR.half - 0.01), 0.13));   // 付け根の鋲
+    }
+    rivetG.dispose();
+    tw.pinGlow = addGlow(0, -9, 0, 0xd8eeff, 0.5); tw.pinGlow.k = 0;
+    setPinMatrices(tw, true);
+  } else tw.pinGlow = addGlow(0, -9, 0, 0xd8eeff, 0.5);
+  // ---- 6 動く区間の中継の旗竿（buildRelay が st.twB に作った）の灯りを覚える
+  tw.relays = st.relays.filter(r => r.s > A0 && r.s < A1);
+  for (const r of tw.relays) { r.tw = true; r.glowY = r.glow.y; }
+  // ---- 7 盤の上の受け（動かない）：黒鉄の円盤に放射の継ぎ目と白銀の縁（塔はここから上がる）
+  { const R2 = td.r + 0.62, disc = new THREE.CylinderGeometry(R2, R2, 0.03, 72); B.put(MAT.ironB, disc, cx, Y0 + 0.012, cz); disc.dispose();
+    const rim = new THREE.TorusGeometry(R2, 0.035, 8, 96); B.put(MAT.silverW, rim, cx, Y0 + 0.03, cz, Math.PI / 2); rim.dispose();
+    const rim2 = new THREE.TorusGeometry(0.55, 0.025, 8, 40); B.put(MAT.silverD, rim2, cx, Y0 + 0.03, cz, Math.PI / 2); rim2.dispose();
+    const seam = new THREE.BoxGeometry(R2 - 0.6, 0.008, 0.02);
+    for (let k = 0; k < 12; k++) { const a = k / 12 * TAU + 0.13, rr = (R2 + 0.55) / 2; B.put(MAT.silverD, seam, cx + Math.cos(a) * rr, Y0 + 0.03, cz + Math.sin(a) * rr, 0, -a, 0); }
+    seam.dispose();
+    // 縁の小さな霜の灯り（上がる間だけ強く光る）
+    tw.rimGlows = [0, 1, 2, 3, 4, 5].map(k => { const a = k / 6 * TAU + 0.5; return addGlow(cx + Math.cos(a) * R2, Y0 + 0.06, cz + Math.sin(a) * R2, 0xbfe2ff, 0.5); });
+    tw.rimR = R2; }
+  // ---- 8 ロックの止め（動かない溝の端。柱 2 本・梁・上下する棒・3 星の灯り）
+  { const sG = A0 - 0.025; C.frame(sG, FR); const hw = FR.half;
+    const gpost = new THREE.CylinderGeometry(0.035, 0.042, 0.66, 10);
+    for (const k of [-1, 1]) { B.add(MAT.ironB, gpost, frameMatrix(FR, k * (hw + 0.1), 0.28)); st.footprints.push({ x: FR.p[0] + FR.l[0] * k * (hw + 0.1), z: FR.p[2] + FR.l[2] * k * (hw + 0.1), r: 0.045, top: FR.p[1] + 0.62, bottom: FR.p[1] - 0.06, kind: 'towerLockPost' }); }
+    gpost.dispose();
+    const beam = new THREE.BoxGeometry(2 * hw + 0.32, 0.07, 0.09); B.add(MAT.silverW, beam, frameMatrix(FR, 0, 0.63)); beam.dispose();
+    const lg = new THREE.SphereGeometry(0.045, 12, 8);
+    tw.lockLamps = [-1, 0, 1].map(j => { const p = cpt(C, sG, j * 0.2, 0.7), m = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: TW_DIM.clone() })); m.material.__own = true; m.position.set(p[0], p[1], p[2]); stageRoot.add(m); return m; });
+    tw.lockGlow = addGlow(...cpt(C, sG, 0, 0.7), 0xbfe2ff, 0.55);
+    const parts = [new THREE.BoxGeometry(2 * hw - 0.06, 0.07, 0.05), new THREE.BoxGeometry(2 * hw - 0.2, 0.025, 0.056)];
+    parts.forEach(g => g.deleteAttribute('uv'));
+    const geo = mergeGeometries(parts, true); parts.forEach(g => g.dispose());
+    const m = new THREE.Mesh(geo, [MAT.silverW, MAT.frost]); m.castShadow = true; m.matrixAutoUpdate = false; stageRoot.add(m);
+    tw.bar = { m, base: frameMatrix(FR, 0, 0), up: 0, last: null };
+  }
+  // 光の粒（天の川の上）は動く区間には出さない
+  st.milky = st.milky.filter(s2 => !(s2 > A0 - 0.1 && s2 < A1 + 0.1));
+  tw.meshes = TB.build(grp);
+  st.tw = tw;   // updateTowerLook の前に（S を経由しないで済むように）
+  updateTowerLook(tw, 0);
+  return tw;
+}
+// ピンの行列：鳴ったピンは付け根を軸に、進む向きへはじかれてから細かく震えて戻る。玉がすぐ手前に来たら少し押されてたわむ
+function setPinMatrices(tw, all) {
+  if (!tw.tines) return;
+  let dirty = false; const b = G.ball;
+  for (const p of tw.pins) {
+    const a = G.time - p.t, ring = a >= 0 && a < TWC.PIN_RING;
+    const near = b && b.mode === 'ground' && b.s > p.s - 0.28 && b.s < p.s + 0.02 && tw.off < 1e-6 ? (b.s - (p.s - 0.28)) / 0.3 : 0;
+    if (!all && !ring && !p.on && near <= 0) continue;
+    p.on = ring || near > 0; dirty = true;
+    const ang = ring ? 0.55 * Math.exp(-7 * a) * Math.cos(a * 52) : 0.35 * near;
+    const m = p.base.clone().multiply(_m4.makeRotationY(-p.k * ang)).multiply(_m4b.makeTranslation(-p.k * TWC.PIN_LEN / 2, 0, 0));
+    tw.tines.setMatrixAt(p.i, m);
+    tw.tips.setMatrixAt(p.i, p.base.clone().multiply(_m4.makeRotationY(-p.k * ang)).multiply(_m4b.makeTranslation(-p.k * TWC.PIN_LEN, 0, 0)));
+  }
+  if (dirty) { tw.tines.instanceMatrix.needsUpdate = true; tw.tips.instanceMatrix.needsUpdate = true; }
+}
+// 見た目：塔の高さ・錠の灯り・ロックの棒・受けの縁の灯り・冠・ピン・動く中継の旗の灯り
+function updateTowerLook(tw, dt) {
+  const t = G.time, off = tw.off, need = tw.def.need;
+  tw.group.position.y = -off;
+  const n = Math.min(G.gateCount, need), rising = tw.phase === 'rising';
+  for (let i = 0; i < 3; i++) {
+    const on = i < n, pulse = rising || tw.phase === 'up' ? 0.75 + 0.25 * Math.sin(t * 5 + i * 2.1) : 1;
+    _twC.copy(on ? TW_STAR[i] : TW_DIM).multiplyScalar(on ? pulse : 1);
+    tw.lamps[i].material.color.copy(_twC); tw.lockLamps[i].material.color.copy(_twC);
+  }
+  tw.crownGlow.y = tw.crownY - off; tw.crownGlow.k = tw.phase === 'up' ? 0.75 + 0.15 * Math.sin(t * 1.4) : rising ? 0.9 + 0.5 * Math.sin(t * 9) : 0.18 + 0.1 * n;
+  const want = towerUp(tw) ? 1 : 0;
+  tw.bar.up += (want - tw.bar.up) * (dt > 0 ? 1 - Math.exp(-10 * dt) : 1);
+  tw.bar.m.matrix.copy(tw.bar.base).multiply(_m4.makeTranslation(0, lerp(TWC.GATE_LO, TWC.GATE_HI, tw.bar.up), 0));
+  if (tw.bar.last !== null && tw.bar.last !== want && G.state === 'playing') Sound.play('shutter');
+  tw.bar.last = want;
+  if (want) { tw.lockGlow.r = 0.85; tw.lockGlow.g = 0.95; tw.lockGlow.b = 1; tw.lockGlow.k = 0.9; } else { tw.lockGlow.r = 0.75; tw.lockGlow.g = 0.85; tw.lockGlow.b = 1; tw.lockGlow.k = 0.45 + 0.25 * Math.sin(t * 4); }
+  for (let k = 0; k < tw.rimGlows.length; k++) tw.rimGlows[k].k = rising ? 1.2 + 0.6 * Math.sin(t * 10 + k) : 0.22 + 0.08 * Math.sin(t * 1.3 + k);
+  if (rising && dt > 0) for (let k = 0; k < 3; k++) { const a = Math.random() * TAU, r = tw.rimR * (0.85 + Math.random() * 0.2); emit(tw.def.x + Math.cos(a) * r, CFG.DECK_Y + 0.05, tw.def.z + Math.sin(a) * r, Math.cos(a) * 0.4, 0.9 + Math.random() * 0.8, Math.sin(a) * 0.4, Math.random() < 0.5 ? 0xe8f4ff : 0xbfe2ff, 0.08 + Math.random() * 0.07, 0.9 + Math.random() * 0.5, 0.25); }   // 霜の煙
+  for (const r of tw.relays) r.glow.y = r.glowY - off;
+  if (tw.pinGlow.k > 0) tw.pinGlow.k = Math.max(0, tw.pinGlow.k - (dt > 0 ? dt * 2.6 : 0));
+  setPinMatrices(tw, false);
+}
+// ================================================================ S10改修（本命セット②）：千鳥スラロームピン・精密ポケット演出・水準針・生活感小物・秋の満月と薄雲
+// すべて def.slalomPins / w.w.pocket / def.theme === 'autumn' で分岐するため、S1〜S9・S11 には一切影響しない
+
+// ---- 1 真鍮ピンの千鳥スラローム（案2・開幕）
+function buildSlalomPins(st, B, C) {
+  const list = [];
+  if (!C.slalomPins || !C.slalomPins.length) return list;
+  const clampG = new THREE.BoxGeometry(0.09, 0.16, 0.11);
+  const pegG = new THREE.CylinderGeometry(0.036, 0.044, 0.30, 14);
+  const collarG = new THREE.TorusGeometry(0.046, 0.012, 6, 16);
+  const tipG = new THREE.SphereGeometry(0.052, 14, 10);
+  const tickG = new THREE.BoxGeometry(0.18, 0.008, 0.026);
+  for (const p of C.slalomPins) {
+    C.frame(p.s, FR);
+    const uBase = p.side * FR.half, uTip = p.side * (FR.half - p.len);
+    const baseP = cpt(C, p.s, uBase, 0.14);
+    const grp = new THREE.Group();
+    grp.position.set(baseP[0], baseP[1], baseP[2]);
+    // 基底 (L, N, T) に合わせてローカル座標を作る（x = 横 u、y = 上 n、z = 進行 t）
+    const basis = new THREE.Matrix4().makeBasis(_v1.fromArray(FR.l), _v2.fromArray(FR.n), _v3.fromArray(FR.t));
+    grp.quaternion.setFromRotationMatrix(basis);
+    stageRoot.add(grp);
+    const PB = new Batch();
+    const dx = -p.side * p.len;   // 付け根からピン先端へのローカル x
+    PB.put(MAT.copperDark, clampG, 0, -0.02, 0);
+    PB.rod(MAT.brassBright, [0, 0.01, 0], [dx, 0.01, 0], 0.024, 10);
+    PB.rod(MAT.copper, [0, -0.07, 0], [dx * 0.65, -0.03, 0], 0.014, 6);   // 斜めの控え棒
+    PB.put(MAT.brassBright, pegG, dx, 0.02, 0);
+    PB.put(MAT.copper, collarG, dx, -0.08, 0, Math.PI / 2);
+    PB.put(MAT.copper, collarG, dx, 0.12, 0, Math.PI / 2);
+    PB.put(MAT.amber, tipG, dx, 0.19, 0);
+    PB.build(grp);
+    // 通過側の床に真鍮の目盛りガイド線（3本の短い刻み）
+    const uPass = -p.side * (FR.half * 0.45);
+    for (const ds of [-0.14, 0, 0.14]) {
+      C.frame(p.s + ds, FR2);
+      B.add(MAT.brassBright, tickG, frameMatrix(FR2, uPass, 0.008), { noShadow: true });
+    }
+    const tipW = cpt(C, p.s, uTip, 0.34);
+    const glow = addGlow(tipW[0], tipW[1], tipW[2], 0xffc86a, 0.38); glow.k = 0.55;
+    list.push({ p, s: p.s, side: p.side, len: p.len, r: p.r, half: FR.half, grp, baseQ: grp.quaternion.clone(), tipW, glow, hitT: -9, lastHit: -9 });
+  }
+  [clampG, pegG, collarG, tipG, tickG].forEach(g => g.dispose());
+  return list;
+}
+
+// stepGround 内（レール・開口部の直後）：真鍮スラロームピンとの2Dカプセル当たり判定（弾かれ＋金属音＋微振動）
+function slalomStep(b, u) {
+  const C = S.C, pins = S.slalomPins;
+  for (const pin of pins) {
+    const minD = BALL_R + pin.r;
+    if (Math.abs(b.s - pin.s) > minD + 0.12) continue;
+    C.frame(pin.s, FR2);
+    const uA = pin.side * FR2.half, uB = pin.side * (FR2.half - pin.len);
+    const uLo = Math.min(uA, uB), uHi = Math.max(uA, uB);
+    const uSeg = clamp(u, uLo, uHi);
+    const ds = b.s - pin.s, du = u - uSeg, dist = Math.hypot(ds, du);
+    if (dist >= minD) continue;
+    let ns, nu;
+    if (dist > 1e-5) { ns = ds / dist; nu = du / dist; }
+    else { ns = b.s >= pin.s ? 1 : -1; nu = 0; }
+    b.s = clamp(pin.s + ns * minD, 0.16, C.L - 0.05);
+    C.frame(b.s, FR);
+    const umax = Math.max(0, FR.half - RAIL_CLEAR);
+    u = clamp(uSeg + nu * minD, -umax, umax);
+    const vt = v3.dot(b.v, FR.t), vl = v3.dot(b.v, FR.l);
+    const vn = vt * ns + vl * nu;
+    if (vn < 0) {
+      const imp = -(1 + 0.52) * vn;
+      for (let i = 0; i < 3; i++) b.v[i] += imp * (FR.t[i] * ns + FR.l[i] * nu);
+      if (G.time - pin.lastHit > 0.12) {
+        pin.lastHit = pin.hitT = G.time;
+        S.slalomHits = (S.slalomHits || 0) + 1;
+        Sound.play('brassPin', { v: -vn, i: pin.p.i });
+        Haptic(10);
+        const tw = pin.tipW;
+        burst(tw[0], tw[1] - 0.06, tw[2], 12, [0xffdf8c, 0xffffff, 0xd88840], 1.15, 0.15, 0.45, 0.5);
+        logEvent('slalomHit', { i: pin.p.i, v: +(-vn).toFixed(2) });
+      }
+    }
+  }
+  return u;
+}
+
+// お手本用：千鳥スラロームピンを縫い抜ける横位置 uLane と速度上限を返す
+function demoSlalom(b, vd) {
+  const pins = S.slalomPins;
+  if (!pins || !pins.length) return { vd, uLane: null };
+  let next = null;
+  for (const pin of pins) {
+    if (pin.s + pin.r + BALL_R + 0.06 > b.s && pin.s - b.s < 2.2) { next = pin; break; }
+  }
+  if (!next) return { vd, uLane: null };
+  const umax = Math.max(0.1, next.half - RAIL_CLEAR);
+  const uLane = -next.side * Math.min(umax - 0.08, 0.34);
+  return { vd: Math.min(vd, 1.88), uLane };
+}
+
+// ---- 2 案5：精密区間の危険側（鈍い赤銅）／安全側（琥珀ガイド）＆片流れカントの床矢印
+function buildAutumnEdges(st, B, C) {
+  const beadG = new THREE.SphereGeometry(0.026, 8, 6);
+  const chevG = new THREE.ConeGeometry(0.055, 0.14, 3); chevG.rotateX(-Math.PI / 2);
+  const tags = C.def.openingTags || [];
+  C.openings.forEach((o, oi) => {
+    // 腕B の開口は buildBalance 内で腕と一緒に動くよう作るため、固定溝のみここで飾る
+    if (C.balance && C.balance.arms.some(a => o.s0 >= a.s0 - 0.05 && o.s1 <= a.s1 + 0.05)) return;
+    courseTube(B, C, MAT.copperWarn, o.s0, o.s1, fr => o.side * (fr.half - 0.012), 0.004, 0.022, 6, { noShadow: true });
+    // 反対の安全側レール脇に琥珀のガイド鋲
+    for (let s = o.s0 + 0.22; s <= o.s1 - 0.12; s += 0.55) {
+      const p = cpt(C, s, -o.side * (C.half[C.idx(s)] - 0.05), 0.02);
+      B.put(MAT.amber, beadG, p[0], p[1], p[2], 0, 0, 0, 1, 0.6, 1, { noShadow: true });
+    }
+    if (tags[oi] === 'cant') {
+      // 片流れカント：高い安全側を指す小さな真鍮の三角目印（傾きに抗う向きが一目で分かる）
+      for (let s = o.s0 + 0.35; s <= o.s1 - 0.25; s += 0.72) {
+        C.frame(s, FR);
+        const m = frameMatrix(FR, -o.side * FR.half * 0.28, 0.012);
+        m.multiply(_m4.makeRotationY(o.side > 0 ? Math.PI / 2 : -Math.PI / 2));
+        B.add(MAT.brassBright, chevG, m, { noShadow: true });
+      }
+    }
+  });
+  beadG.dispose(); chevG.dispose();
+}
+
+// ---- 3 案5：傾き連動の真鍮水準針（傾斜計）＋ 生活感ノイズ小物（予備分銅・目盛り札）＋ 補助振り子＆小歯車
+function buildAutumnWorkshop(st, B, C) {
+  const Y0 = CFG.DECK_Y, W = { incls: [], pends: [], gears: [], edgeTickT: -9 };
+  // (a) 傾き連動の真鍮傾斜計（水準針）
+  const baseG = new THREE.CylinderGeometry(0.16, 0.20, 0.07, 16);
+  const colG = new THREE.CylinderGeometry(0.026, 0.034, 1, 10);
+  const dialG = new THREE.TorusGeometry(0.24, 0.018, 6, 28, Math.PI);
+  const backG = new THREE.CircleGeometry(0.23, 24, 0, Math.PI);
+  const tickG = new THREE.BoxGeometry(0.012, 0.045, 0.014);
+  const jewelG = new THREE.SphereGeometry(0.028, 10, 8);
+  const pivotG = new THREE.SphereGeometry(0.032, 10, 8);
+  for (const inc of C.def.inclinometers || []) {
+    const x = inc.x, z = inc.z, h = inc.y - Y0;
+    // コースや既存置物とぶつからないか安全確認してから立てる
+    let safe = Math.abs(x) < BOARD.w / 2 - 0.45 && Math.abs(z) < BOARD.d / 2 - 0.45;
+    for (let i = 0; i <= C.M && safe; i += 2) {
+      const d = Math.hypot(C.P[i * 3] - x, C.P[i * 3 + 2] - z);
+      if (d < C.half[i] + 0.34 && C.P[i * 3 + 1] - 0.12 < inc.y + 0.32 && C.P[i * 3 + 1] + 0.6 > Y0) safe = false;
+    }
+    if (!safe) continue;
+    B.put(MAT.navy, baseG, x, Y0 + 0.035, z);
+    B.put(MAT.copper, colG, x, Y0 + h / 2, z, 0, 0, 0, 1, h, 1);
+    const ry = inc.axis === 'x' ? Math.PI / 2 : 0;
+    B.put(MAT.brassOld, dialG, x, inc.y, z, 0, ry, 0);
+    B.put(MAT.navy, backG, x, inc.y, z, 0, ry, 0, 1, 1, 1, { noShadow: true });
+    B.put(MAT.amber, jewelG, x, inc.y + 0.24, z, 0, 0, 0, 1, 1, 1, { noShadow: true });
+    for (let k = -3; k <= 3; k++) {
+      const a = k * 0.38;
+      const dx = Math.sin(a) * 0.20, dy = Math.cos(a) * 0.20;
+      const m = new THREE.Matrix4().makeTranslation(x, inc.y, z).multiply(_m4.makeRotationY(ry)).multiply(_m4b.makeTranslation(dx, dy, 0.008)).multiply(new THREE.Matrix4().makeRotationZ(-a));
+      B.add(k === 0 ? MAT.amber : MAT.brassBright, tickG, m, { noShadow: true });
+    }
+    // 動く水準針（ジャイロの傾きに合わせてチリチリ振れる）
+    const ng = new THREE.Group(); ng.position.set(x, inc.y, z); ng.rotation.y = ry; stageRoot.add(ng);
+    const NB = new Batch();
+    NB.put(MAT.copper, pivotG, 0, 0, 0.018);
+    NB.rod(MAT.brassBright, [0, -0.05, 0.02], [0, 0.21, 0.02], 0.011, 6);
+    NB.put(MAT.amber, jewelG, 0, 0.21, 0.02, 0, 0, 0, 0.85, 0.85, 0.85, { noShadow: true });
+    NB.build(ng);
+    const gl = addGlow(x, inc.y + 0.24, z, 0xffbe60, 0.35); gl.k = 0.55;
+    W.incls.push({ grp: ng, axis: inc.axis, ang: 0, vel: 0, glow: gl });
+    st.footprints.push({ x, z, r: 0.22, top: inc.y + 0.28, bottom: Y0, kind: 'inclinometer' });
+  }
+  [baseG, colG, dialG, backG, tickG, jewelG, pivotG].forEach(g => g.dispose());
+
+  // (b) 生活感ノイズ：空き地に置く大小ふぞろいの予備真鍮分銅の皿・傾いた目盛り札
+  const trayG = new THREE.CylinderGeometry(0.32, 0.35, 0.03, 24);
+  const trayRim = new THREE.TorusGeometry(0.32, 0.014, 6, 28);
+  const wProf = [[0, 0], [0.07, 0], [0.068, 0.09], [0.04, 0.12], [0.02, 0.14], [0.032, 0.17], [0, 0.18]].map(q => new THREE.Vector2(q[0], q[1]));
+  const spWG = new THREE.LatheGeometry(wProf, 14);
+  const tagG = new THREE.BoxGeometry(0.24, 0.012, 0.14);
+  const propSpots = [
+    { x: -1.8, z: 3.1, rot: 0.35, kind: 'weights' },
+    { x: 2.35, z: 1.55, rot: -0.5, kind: 'weights' },
+    { x: -3.2, z: -1.45, rot: 0.8, kind: 'weights' },
+    { x: 3.1, z: -1.65, rot: -0.25, kind: 'plaques' },
+    { x: -1.35, z: -1.9, rot: 0.18, kind: 'plaques' },
+  ];
+  for (const sp of propSpots) {
+    let ok = true;
+    for (let i = 0; i <= C.M && ok; i += 2) {
+      if (Math.hypot(C.P[i * 3] - sp.x, C.P[i * 3 + 2] - sp.z) < C.half[i] + 0.44 && C.P[i * 3 + 1] < 0.95) ok = false;
+    }
+    for (const f of st.footprints) if (Math.hypot(f.x - sp.x, f.z - sp.z) < f.r + 0.44) ok = false;
+    if (!ok) continue;
+    if (sp.kind === 'weights') {
+      B.put(MAT.navy, trayG, sp.x, Y0 + 0.015, sp.z);
+      B.put(MAT.copper, trayRim, sp.x, Y0 + 0.03, sp.z, Math.PI / 2);
+      // 大小ふぞろいに少しずらして並べた予備分銅4個
+      const cfg = [[0.09, 0.05, 1.15], [-0.11, 0.07, 0.88], [0.02, -0.12, 0.72], [-0.12, -0.09, 0.56]];
+      for (const [ox, oz, sc] of cfg) {
+        const rx = ox * Math.cos(sp.rot) - oz * Math.sin(sp.rot), rz = ox * Math.sin(sp.rot) + oz * Math.cos(sp.rot);
+        B.put(sc > 0.8 ? MAT.brassOld : MAT.copper, spWG, sp.x + rx, Y0 + 0.03, sp.z + rz, 0, sp.rot + sc * 2, 0, sc, sc, sc);
+      }
+      st.footprints.push({ x: sp.x, z: sp.z, r: 0.36, top: Y0 + 0.28, bottom: Y0, kind: 'autumnProp' });
+    } else {
+      B.put(MAT.brassOld, tagG, sp.x, Y0 + 0.012, sp.z, 0, sp.rot, 0);
+      B.put(MAT.copperDark, tagG, sp.x + 0.12, Y0 + 0.024, sp.z - 0.08, 0, sp.rot + 0.42, 0, 0.75, 1, 0.75);
+      B.put(MAT.brassBright, spWG, sp.x - 0.14, Y0 + 0.005, sp.z + 0.06, 0, sp.rot, 0, 0.7, 0.7, 0.7);
+      st.footprints.push({ x: sp.x, z: sp.z, r: 0.28, top: Y0 + 0.20, bottom: Y0, kind: 'autumnProp' });
+    }
+  }
+  [trayG, trayRim, spWG, tagG].forEach(g => g.dispose());
+
+  // (c) 中央天秤の支柱わきの小歯車と補助振り子（絶えず静かに動く計量工房の気配）
+  if (st.bal) {
+    const bal = st.bal, hub = bal.def.hubXZ, HcR = bal.crownRingH;
+    // 支柱の軸受け横に小さな真鍮歯車（ゆっくり反対回し）
+    const mgGeo = gearGold.clone();
+    for (let i = 0; i < bal.arms.length; i++) {
+      const arm = bal.arms[i], ay = arm.P[1] - 0.16, PR = bal.def.pillarR || BALC.PILLAR_R;
+      for (const k of [-1, 1]) {
+        const px = hub[0] + arm.axis.x * k * (PR + 0.12), pz = hub[1] + arm.axis.z * k * (PR + 0.12);
+        const m = new THREE.Mesh(mgGeo, i === 0 ? MAT.brassOld : MAT.copper);
+        m.position.set(px, ay, pz); m.scale.setScalar(0.18);
+        m.rotation.y = Math.atan2(arm.axis.x, arm.axis.z);
+        stageRoot.add(m);
+        W.gears.push({ m, speed: (i === 0 ? 0.55 : -0.42) * k, baseRy: m.rotation.y });
+      }
+    }
+    mgGeo.dispose();
+    // 冠の環の左右から吊る小さな補助振り子2本（腕Aより十分高い位置に収める）
+    const pLen = Math.max(0.22, Math.min(0.45, HcR - (bal.hubP[1] + 0.78)));
+    if (pLen >= 0.22) {
+      for (const sgn of [-1, 1]) {
+        const px = hub[0] + sgn * (BALC.PILLAR_R - 0.04), pz = hub[1];
+        const pg = new THREE.Group(); pg.position.set(px, HcR - 0.04, pz); stageRoot.add(pg);
+        const PB = new Batch();
+        PB.rod(MAT.brassOld, [0, 0, 0], [0, -pLen, 0], 0.009, 6);
+        const bob = new THREE.CylinderGeometry(0.055, 0.055, 0.022, 16);
+        PB.put(MAT.brassBright, bob, 0, -pLen, 0, Math.PI / 2); bob.dispose();
+        PB.build(pg);
+        W.pends.push({ grp: pg, phase: sgn > 0 ? 0 : Math.PI * 0.7, amp: 0.14, freq: 1.55 });
+      }
+    }
+  }
+  return W;
+}
+
+// 毎フレーム更新：スラロームピンの揺れ・水準針（傾き連動）・補助振り子・小歯車・難所メリハリ明暗・開口縁の微音
+function updateAutumnWorkshop(dt) {
+  const t = G.time;
+  // 1 千鳥スラロームピンの打撃振動と光
+  for (const pin of S.slalomPins || []) {
+    const dtHit = t - pin.hitT;
+    if (dtHit >= 0 && dtHit < 0.75) {
+      const wob = 0.22 * Math.exp(-6.5 * dtHit) * Math.sin(dtHit * 42);
+      pin.grp.quaternion.copy(pin.baseQ).multiply(_q.setFromAxisAngle(_v1.set(0, 1, 0), wob));
+      pin.glow.k = 0.9 + 0.7 * (1 - dtHit / 0.75);
+    } else {
+      pin.grp.quaternion.copy(pin.baseQ);
+      const near = G.ball.mode === 'ground' && Math.abs(G.ball.s - pin.s) < 2.2;
+      pin.glow.k = near ? 0.75 + 0.2 * Math.sin(t * 5 + pin.p.i) : 0.35;
+    }
+  }
+  const W = S.autumnW;
+  if (!W) return;
+  // 2 傾き連動の真鍮水準針（実際の盤傾き G.tilt.rx / rz に追従＋微細なバネ感）
+  for (const inc of W.incls) {
+    const raw = inc.axis === 'z' ? G.tilt.rx : -G.tilt.rz;
+    const target = clamp(raw * 4.2, -1.15, 1.15);
+    if (dt > 0) {
+      inc.vel += ((target - inc.ang) * 42 - inc.vel * 7.5) * dt;
+      inc.ang = clamp(inc.ang + inc.vel * dt, -1.25, 1.25);
+    } else inc.ang = target;
+    inc.grp.rotation.z = -inc.ang;
+    inc.glow.k = 0.42 + Math.min(0.55, Math.abs(inc.ang) * 0.45);
+  }
+  // 3 補助振り子・小歯車・薄雲のゆらぎ
+  for (const pd of W.pends) pd.grp.rotation.z = Math.sin(t * pd.freq + pd.phase) * pd.amp;
+  for (const gr of W.gears) gr.m.rotation.z = t * gr.speed;
+  if (S.moonClouds) S.moonClouds.position.x = S.moonCloudX0 + Math.sin(t * 0.14) * 0.28;
+  // 4 難所だけ光らせる明暗メリハリ（通常の未通過チェックポイントは控えめ、次の目標ゲート・未作動分銅を明るく）
+  for (const c of S.cps) {
+    c.glow.r = 1.0; c.glow.g = 0.74; c.glow.b = 0.36;
+    c.glow.k = c.passed ? 0.24 : 0.04;
+  }
+  for (const g of S.gates) {
+    if (!g.passed) {
+      const next = G.gateCount === g.idx && G.state === 'playing';
+      g.glow.k = next ? 1.15 + 0.35 * Math.sin(t * 4.5) : 0.32;
+      g.glow.size = next ? 0.72 : 0.42;
+    }
+  }
+  // 5 開口縁すれすれ通過の乾いた真鍮ティック音（BGMなし方針維持・控えめに）
+  if (G.state === 'playing' && G.ball.mode === 'ground' && G.ball.onOpening && t - W.edgeTickT > 0.36) {
+    W.edgeTickT = t;
+    Sound.play('brassEdge');
+  }
+}
+
+// ---- 4 案5・遠景：中秋の満月の模様テクスチャ（月の海）＋ 秋の薄雲・星霞の絵
+let _autumnMoonTex = null, _autumnCloudTex = null;
+function getAutumnMoonTex() {
+  if (_autumnMoonTex) return _autumnMoonTex;
+  _autumnMoonTex = canvasTex(512, 256, (g, W, H) => {
+    const gr = g.createLinearGradient(0, 0, 0, H);
+    gr.addColorStop(0, '#f7e5be'); gr.addColorStop(0.5, '#f2d9a2'); gr.addColorStop(1, '#e6c68a');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    const R = rng(101);
+    // 月の海（柔らかなうさぎ模様の陰影）
+    const maria = [
+      [0.38, 0.42, 68, 42, 0.25], [0.48, 0.36, 52, 34, -0.2], [0.56, 0.48, 60, 44, 0.4],
+      [0.44, 0.60, 46, 30, -0.35], [0.62, 0.38, 36, 26, 0.15], [0.33, 0.54, 40, 28, 0.5],
+      [0.72, 0.52, 48, 30, -0.15], [0.22, 0.45, 42, 28, 0.2],
+    ];
+    for (const [fx, fy, rx, ry, rot] of maria) {
+      g.save(); g.translate(fx * W, fy * H); g.rotate(rot);
+      const rg = g.createRadialGradient(0, 0, 2, 0, 0, rx);
+      rg.addColorStop(0, 'rgba(138,108,68,0.34)'); rg.addColorStop(0.65, 'rgba(155,122,78,0.18)'); rg.addColorStop(1, 'rgba(155,122,78,0)');
+      g.fillStyle = rg; g.scale(1, ry / rx); g.beginPath(); g.arc(0, 0, rx, 0, TAU); g.fill(); g.restore();
+    }
+    // 細かなクレーターと輝点
+    for (let i = 0; i < 160; i++) {
+      const x = R() * W, y = (0.12 + R() * 0.76) * H, rr = 2 + R() * 11;
+      g.fillStyle = R() < 0.65 ? `rgba(128,96,58,${0.05 + R() * 0.08})` : `rgba(255,248,225,${0.06 + R() * 0.1})`;
+      g.beginPath(); g.arc(x, y, rr, 0, TAU); g.fill();
+    }
+  }, { aniso: 2 });
+  return _autumnMoonTex;
+}
+function getAutumnCloudTex() {
+  if (_autumnCloudTex) return _autumnCloudTex;
+  _autumnCloudTex = canvasTex(512, 256, (g, W, H) => {
+    g.clearRect(0, 0, W, H);
+    // 秋の薄雲（たなびく横雲）とほのかな星霞
+    const bands = [
+      [0.52, 0.62, 210, 26, 'rgba(246,204,142,0.22)'],
+      [0.36, 0.54, 150, 20, 'rgba(232,175,108,0.18)'],
+      [0.66, 0.44, 175, 18, 'rgba(255,222,168,0.16)'],
+      [0.48, 0.70, 190, 22, 'rgba(180,115,66,0.18)'],
+    ];
+    for (const [fx, fy, rx, ry, col] of bands) {
+      g.save(); g.translate(fx * W, fy * H);
+      const rg = g.createRadialGradient(0, 0, 4, 0, 0, rx);
+      rg.addColorStop(0, col); rg.addColorStop(0.65, col.replace(/[\d.]+\)$/, '0.06)')); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = rg; g.scale(1, ry / rx); g.beginPath(); g.arc(0, 0, rx, 0, TAU); g.fill(); g.restore();
+    }
+    // 細かな星霞の点
+    const R = rng(107);
+    for (let i = 0; i < 60; i++) {
+      const x = (0.1 + R() * 0.8) * W, y = (0.18 + R() * 0.64) * H, rr = 0.8 + R() * 1.4;
+      g.fillStyle = `rgba(255,236,192,${0.25 + R() * 0.35})`;
+      g.beginPath(); g.arc(x, y, rr, 0, TAU); g.fill();
+    }
+  }, { aniso: 1 });
+  return _autumnCloudTex;
 }
 
 function buildBasket(st, B, C) {
@@ -4282,6 +5602,12 @@ function buildBasket(st, B, C) {
   const mg = addGlow(px, y0 + 0.86, pz, 0xfff2d0, 0.7); mg.k = 0.8;
   [dais, ring0, bowl, r1, r2, moon].forEach(g => g.dispose());
   if (C.def.theme === 'autumn') {   // S10：盃は天秤の四本柱の冠の台に載る（台は buildBalance）。下へ柱は立てない（腕を貫くため）
+  } else if (y0 > CFG.DECK_Y + 0.05 && C.def.theme === 'winter') {   // S11：細い白銀の柱（黒鉄の輪）に盃を載せる。柱は細く（S 字の溝のそばを通るため）
+    const H = y0 - CFG.DECK_Y, stem = new THREE.CylinderGeometry(0.09, 0.14, H, 24), foot = new THREE.CylinderGeometry(0.2, 0.24, 0.08, 24), cup = new THREE.CylinderGeometry(0.62, 0.16, 0.22, 36), ring = new THREE.TorusGeometry(0.12, 0.02, 8, 20);
+    B.put(MAT.silverW, stem, bx, (y0 + CFG.DECK_Y) / 2, bz); B.put(MAT.ironB, foot, bx, CFG.DECK_Y + 0.04, bz); B.put(MAT.ironB, cup, bx, y0 - 0.11, bz);
+    for (let y = CFG.DECK_Y + 0.5; y < y0 - 0.4; y += 0.62) B.put(MAT.ironB, ring, bx, y, bz, Math.PI / 2);
+    [stem, foot, cup, ring].forEach(g => g.dispose());
+    st.footprints.push({ x: bx, z: bz, r: 0.15, top: y0 - 0.2, kind: 'goalStem' });
   } else if (y0 > CFG.DECK_Y + 0.05 && (C.def.theme === 'spring' || C.def.theme === 'summer')) {   // S8：細い真鍮の柱に盃を載せる（ローズゴールドの輪と、足元の黒漆の台）／S9：輪は青焼きスチール
     const H = y0 - CFG.DECK_Y, stem = new THREE.CylinderGeometry(0.13, 0.19, H, 24), foot = new THREE.CylinderGeometry(0.5, 0.58, 0.1, 36), cup = new THREE.CylinderGeometry(0.62, 0.2, 0.22, 36), ring = new THREE.TorusGeometry(0.17, 0.022, 8, 24);
     B.put(MAT.gold, stem, bx, (y0 + CFG.DECK_Y) / 2, bz); B.put(MAT.navy, foot, bx, CFG.DECK_Y + 0.05, bz); B.put(MAT.navy, cup, bx, y0 - 0.11, bz);
@@ -4295,7 +5621,7 @@ function buildBasket(st, B, C) {
   st.basket = { x: bx, z: bz, y: y0 + 0.075, rWall: 0.49 - 0.05 - BALL_R * 0.55, entry };
   st.basketGlow = addGlow(bx, y0 + 0.35, bz, 0xfff0c8, 1.6); st.basketGlow.k = 0.25;
   st.footprints.push({ x: bx, z: bz, r: 0.8, top: y0 + 0.4, kind: 'basket' });
-  st.footprints.push({ x: px, z: pz, r: 0.3, top: y0 + 1.1, kind: 'goalplate', ...(C.def.theme === 'autumn' ? { bottom: y0 } : {}) });   // S10：三日月の柱は冠の台の上から（下は空いている）
+  st.footprints.push({ x: px, z: pz, r: 0.3, top: y0 + 1.1, kind: 'goalplate', ...(C.def.theme === 'autumn' || C.def.theme === 'winter' ? { bottom: y0 } : {}) });   // S11：三日月の柱は盃の台の上から（下は空いている）   // S10：三日月の柱は冠の台の上から（下は空いている）
 }
 
 // 支柱：中心線の真下に立てられない所は、外側の細い柱か、何も立てない
@@ -4317,6 +5643,7 @@ function buildSupports(st, B, C) {
     if (C.gapAt(s) || C.gaps.some(g => s > g.s0 - 0.2 && s < g.s1 + 0.1) || C.hiddenAt(s)) continue;
     if (C.bridges.some(w => s > w.s0 - 0.15 && s < w.s1 + 0.15)) continue;   // S9：開閉ブリッジの橋桁の下には立てない
     if (C.balance && C.balance.arms.some(a => s > a.s0 - 0.3 && s < a.s1 + 0.3)) continue;   // S10：天秤の腕（冠から吊った軸で支える）の下には立てない
+    if (C.tower && s > C.tower.s0 - 0.3 && s < C.tower.s1 + 0.3) continue;   // S11：動く塔（芯から腕で支える）の下には立てない
     C.frame(s, FR);
     const top = FR.p[1] - 0.07;
     if (top < 0.26) continue;
@@ -4671,6 +5998,7 @@ function buildGrand(st, def) {
     bigObj(st, [m], samples, 0.25);
   });
   // 四隅の灯籠塔
+  st.lanternXZ = [];
   const cxT = BOARD.w / 2 - 0.33, czT = BOARD.d / 2 - 0.32;
   for (const [x, z] of [[-cxT, -czT], [cxT, -czT], [-cxT, czT], [cxT, czT]]) {
     // 広い盤では角までコースやゴールが来るので、ぶつかる塔は立てない
@@ -4679,6 +6007,7 @@ function buildGrand(st, def) {
       for (let i = 0; i <= st.C.M && !near; i += 4) if (Math.hypot(st.C.P[i*3] - x, st.C.P[i*3+2] - z) < st.C.half[i] + 0.6) near = true;
       if (near) continue;
     }
+    st.lanternXZ.push([x, z]);
     const parts = [[], [], []];   // 黒漆・金・灯り
     const add = (i, g, px, py, pz, ry = 0) => { g.rotateY(ry); g.translate(px, py, pz); g.deleteAttribute('uv'); parts[i].push(g.index ? g : g.setIndex([...Array(g.attributes.position.count).keys()])); };
     add(0, new THREE.CylinderGeometry(0.2, 0.26, 0.2, 8), x, Y0 + 0.1, z);
@@ -4695,14 +6024,20 @@ function buildGrand(st, def) {
     bigObj(st, [m], [0.4, 1.4, 2.4, 3.2].map(y => new THREE.Vector3(x, Y0 + y, z)), 0.45);
   }
   // 後ろの大きな三日月（螺鈿）と金の雲
-  if (def.theme === 'autumn') { const mz = -(BOARD.d / 2 + 1.6), mx = 1.8 * kW;   // S10：中秋の名月（満月）
-    const g = new THREE.SphereGeometry(1.25, 48, 32); const mm = MAT.pearl.clone(); mm.map = null; mm.color.setHex(0xf3dcae); mm.emissive = new THREE.Color(0x7a4c18); mm.emissiveIntensity = 0.6; mm.roughness = 0.6; mm.metalness = 0.05;
-    const m = new THREE.Mesh(g, mm); m.position.set(mx, 4.1, mz);
-    addGlow(mx, 4.1, mz, 0xffd590, 4.6).k = 0.5;
+  if (def.theme === 'autumn') { const mz = -(BOARD.d / 2 + 1.6), mx = 1.8 * kW;   // S10改修：月の海模様の満月＋秋の薄雲と星霞
+    const g = new THREE.SphereGeometry(1.25, 48, 32);
+    const mTex = getAutumnMoonTex();
+    const mm = MAT.pearl.clone(); mm.map = mTex; mm.color.setHex(0xfff2d2); mm.emissive = new THREE.Color(0x88561e); mm.emissiveMap = mTex; mm.emissiveIntensity = 0.65; mm.roughness = 0.72; mm.metalness = 0.02;
+    const m = new THREE.Mesh(g, mm); m.position.set(mx, 4.1, mz); m.rotation.y = -0.5;
+    const cg = new THREE.PlaneGeometry(5.8, 2.9);
+    const cm = new THREE.MeshBasicMaterial({ map: getAutumnCloudTex(), transparent: true, opacity: 0.78, depthWrite: false, fog: false }); cm.__own = true;
+    const cloud = new THREE.Mesh(cg, cm); cloud.position.set(mx - 0.35, 3.75, mz + 1.38); cloud.renderOrder = 2; stageRoot.add(cloud);
+    st.moonClouds = cloud; st.moonCloudX0 = mx - 0.35;
+    addGlow(mx, 4.1, mz, 0xffd590, 4.8).k = 0.52;
     bigObj(st, [m], [new THREE.Vector3(mx, 4.1, mz), new THREE.Vector3(mx - 1.0, 4.8, mz), new THREE.Vector3(mx + 1.0, 3.4, mz)], 1.1); }
-  else { const mz = -(BOARD.d / 2 + 1.3), mx = 1.8 * kW;
-    const g = new THREE.TorusGeometry(1.45, 0.32, 18, 64, Math.PI * 1.25); const mm = MAT.pearl.clone(); mm.map = null; mm.color.setHex(0xf4f1ea); const m = new THREE.Mesh(g, mm); m.position.set(mx, 3.9, mz); m.rotation.set(0.15, -0.2, 2.2); m.scale.set(1, 1, 0.45);
-    addGlow(mx, 3.9, mz, 0xe6ecff, 3.2).k = 0.35;
+  else { const mz = -(BOARD.d / 2 + 1.3), mx = 1.8 * kW, th = getStageTheme(def);
+    const g = new THREE.TorusGeometry(1.45, 0.32, 18, 64, Math.PI * 1.25); const mm = MAT.pearl.clone(); mm.map = null; mm.color.setHex(0xf4f1ea).lerp(new THREE.Color(th.moon), 0.28); const m = new THREE.Mesh(g, mm); m.position.set(mx, 3.9, mz); m.rotation.set(0.15, -0.2, 2.2); m.scale.set(1, 1, 0.45);
+    addGlow(mx, 3.9, mz, th.moon, 3.4).k = 0.36;
     bigObj(st, [m], [new THREE.Vector3(mx, 3.9, mz), new THREE.Vector3(mx - 1.2, 4.6, mz), new THREE.Vector3(mx + 1.2, 3.2, mz)], 1.0); }
 }
 const _bw = new THREE.Vector3(), _bb = new THREE.Vector3();
@@ -4916,6 +6251,8 @@ function resetRun() {
   for (const r of st.relays) { r.passed = false; r.flag.material = MAT.oxid; r.glow.k = 0.12; }
   for (const w of st.lifts || []) liftReset(w);
   if (st.bal) balanceSnap(st.bal.def.init);   // S10：天秤は最初の向き
+  if (st.slalomPins) { st.slalomHits = 0; for (const p of st.slalomPins) { p.hitT = -9; p.lastHit = -9; } }
+  if (st.tw) { towerSnap(false); pinsReset(-1); }   // S11：塔は沈んだ姿・ピンは全部鳴らしていない状態に
   for (const m of st.melody || []) melodyReset(m, -1);   // S8 逆向き：鉄琴は全部鳴らしていない状態に   // S8：リフトは下の位置・巻き 0 に戻す
   st.basketGlow.k = 0.25;
   placeBall(st.def.startS);
@@ -4982,6 +6319,7 @@ function respawnAtRelay() {
   for (const w of st.lifts || []) if (k >= w.relay && w.phase !== 'top') liftToTop(w);   // S8：リフトの中継より先から再開するときは、リフトは着いた後の位置（順向きは上・逆向きは下。巻き切った時点で中継が更新されている）
   for (const m of st.melody || []) melodyReset(m, s);   // S8 逆向き：再開する所より先の音板は、また鳴るように
   if (st.bal) balanceSnap(k >= 0 && st.relays[k].bal ? st.relays[k].bal : st.bal.def.init);   // S10：天秤の向きを、その中継を通った時点の向きに戻す
+  if (st.tw) { towerSnap(G.gateCount >= st.tw.def.need); pinsReset(s); }   // S11：塔はゲートの記録で決める（3/3 なら上がり切り）。再開する所より先のピンは、また鳴るように
   placeBall(s); G.ball.boosting = null;
   G.state = 'playing'; G.fallAt = G.failAt = G.retryAt = G.autoRetryAt = -1; G.failReason = '';
   UI.toast(false);
@@ -5099,7 +6437,8 @@ function passGate(g) {
   const p = g.star.position;
   burst(p.x, p.y, p.z, 92, [0xffe6a0, 0xffc46a, 0xc8e6ff, 0xffffff, 0xffd6f0], 2.6, 0.32, 1.15, 1.0);
   const b = G.ball.p; burst(b[0], b[1], b[2], 24, [0xffe890, 0xffffff], 1.4, 0.2, 0.7, 0.6);
-  Sound.play('gate', { step: G.gateCount - 1, last: G.gateCount === S.gates.length }); Haptic(25);
+  if (S.def.starColors) { const c = new THREE.Color(S.def.starColors[g.idx]); g.star.material.color.copy(c); g.star.material.emissive.copy(c); g.glow.r = c.r; g.glow.g = c.g; g.glow.b = c.b; }   // S11：くぐった星はその星の色に灯る
+  Sound.play('gate', { step: G.gateCount - 1, last: G.gateCount === S.gates.length, grow: S.def.gateGrow ? G.gateCount : 0 }); Haptic(25);
   UI.gate(G.gateCount);
   if (G.gateCount === S.gates.length) S.basketGlow.k = 1.4;
   logEvent('gate', { n: G.gateCount, progress: +(G.ball.s / S.C.L).toFixed(4) });
@@ -5132,6 +6471,7 @@ function step(dt) {
   }
   if (S.lifts && S.lifts.length) updateLifts(dt);
   if (S.bal) updateBalance(dt);   // S10：天秤が目標の向きへ倒れる
+  if (S.tw) updateTower(dt);      // S11：3 つのゲートがそろったら塔がせり上がる
   if (G.state === 'intro') { G.introT += dt; if (G.introT >= INTRO_DUR) endIntro(); }
   if (G.state === 'playing') G.timer += dt;
   if (G.state === 'falling' && (G.time - G.fallAt >= CFG.FAIL_AT || G.ball.impact)) failNow('fall');
@@ -5221,7 +6561,9 @@ function stepGround(dt) {
       const vt = v3.dot(b.v, FR.t); if (vt < 0) for (let i = 0; i < 3; i++) b.v[i] -= 1.35 * vt * FR.t[i];
     }
   }
-  if (S.bal) balanceStep(b);   // S10：分銅の皿・向きが合っていない腕の両端で止める
+  if (S.slalomPins && S.slalomPins.length) u = slalomStep(b, u);   // S10改修：真鍮ピンの千鳥スラローム判定
+  if (S.bal) balanceStep(b, dt, u);   // S10：分銅の皿（ポケット式対応）・向きが合っていない腕の両端で止める
+  if (S.tw) towerStep(b);      // S11：塔が上がり切るまでは渡り板の手前で止める
   if (C.bridges.length) bridgeStep(b, dt);   // S9：カササギの開閉ブリッジ（開いている間は橋の両端で止まる。上がり始めた橋桁の上の玉は、近い方の端へ転がされる）
   if ((C.trapdoors.length || C.holePlates.length) && floorFall(b, u)) return;   // 改善1：開いた落とし戸の板の上（S8）・穴の上（S9）なら落ちる
   b.u = u;
@@ -5241,6 +6583,7 @@ function stepGround(dt) {
 function progressCheck() {
   const b = G.ball;
   if (G.state !== 'playing') return;
+  if (S.tw) pinsCheck(b);   // S11：らせんのピン（前へ通ったときだけ鳴る）
   if (S.melody && S.melody.length) melodyCheck(b);   // S8 逆向き：鉄琴（前へ通ったときだけ鳴る）
   // 通過点（順番どおりのみ）
   while (G.cpNext < S.cps.length) {
@@ -5834,7 +7177,9 @@ function demoInput() {
     if (plateClear(w, b.s, Math.max(0, vt), go, b.u)) vd = Math.max(Math.min(vd, 3.0), go);
     else { const stopAt = 0.6; vd = Math.min(vd, dist > stopAt ? Math.sqrt(2 * 2.2 * (dist - stopAt)) : 0); }
   }
-  if (S.bal) vd = demoBalance(b, vd);   // S10：天秤の腕の入口は、止めが開くまで手前で待つ
+  if (S.slalomPins && S.slalomPins.length) { const rs = demoSlalom(b, vd); vd = rs.vd; if (rs.uLane != null) uLane = rs.uLane; }
+  if (S.bal) { const rb = demoBalance(b, vd); vd = rb.vd; if (rb.uLane != null) uLane = rb.uLane; }   // S10：ポケット分銅＋腕の入口
+  if (S.tw) vd = demoTower(b, vd);      // S11：塔のロックの止めが開くまで手前で待つ
   C.frame(b.s, FR);
   const kG = CFG.G * CFG.ROLL;
   const at = 3.2 * (vd - vt) + kG * FR.t[1];
@@ -5913,6 +7258,10 @@ function plateClear(w, s0, v0, vGo, u = 0) {
 const Keys = { down: new Set(), x: 0, z: 0 };
 const KEYMAP = { ArrowLeft: 'L', KeyA: 'L', ArrowRight: 'R', KeyD: 'R', ArrowUp: 'U', KeyW: 'U', ArrowDown: 'D', KeyS: 'D' };
 addEventListener('keydown', e => {
+  if (UI.titleOpen && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+    if (!e.repeat) UI.selectStage(UI.sel + (e.code === 'ArrowRight' ? 1 : -1));
+    e.preventDefault(); return;
+  }
   if (KEYMAP[e.code]) { Keys.down.add(KEYMAP[e.code]); e.preventDefault(); return; }
   if (e.repeat) return;
   if (e.code === 'KeyR' || e.code === 'Space' || e.code === 'Enter') { if (UI.titleOpen) UI.play(); else if (G.state === 'intro') endIntro(); else if (G.state === 'ready') tapStart(); else if (G.state === 'clear') UI.again(); else retry(e.code === 'KeyR'); e.preventDefault(); }
@@ -6130,9 +7479,29 @@ const Sound = (() => {
     rail: o => { const t = now(), v = clamp((o.v || 1) / 3, 0.15, 1); tone(2350 + Math.random() * 300, t, 0.07, 'sine', 0.13 * v); tone(3790, t, 0.05, 'sine', 0.06 * v); noise(t, 0.03, 3000, 2500, 2, 0.05 * v, 'highpass'); },
     checkpoint: o => { const t = now(), f = note(PENTA[(o.step || 0) % PENTA.length]); bell(f, t, 0.11, 0.9, 0.7); tone(f * 2, t + 0.05, 0.25, 'triangle', 0.025, 0.002, sfx, null, 0.5); },
     gate: o => { const t = now(), k = o.step || 0, root = PENTA[k % PENTA.length] - 5;   // 星ごとに五音音階を1つずつ上がる
+      if (o.grow) {   // S11：1 つ目＝単音 → 2 つ目＝2 和音（5 度）→ 3 つ目＝分散和音（ニ長調の上り）。鐘の響きと低い打音は共通
+        if (o.grow === 1) bell(note(-5), t, 0.17, 1.8, 0.85);
+        else if (o.grow === 2) { bell(note(-5), t, 0.14, 1.9, 0.85); bell(note(2), t, 0.12, 1.9, 0.85); }
+        else [-5, -1, 2, 7, 11, 14].forEach((st, i) => bell(note(st), t + i * 0.085, 0.13 - i * 0.008, 2.2, 0.9));
+        noise(t, 0.6, 6000, 9000, 0.7, 0.05, 'highpass', 0.6); tone(98, t, 0.5, 'sine', 0.18, 0.01, sfx, 70); return; }
       bell(note(root), t, 0.16, 1.6, 0.85); bell(note(root + 12), t + 0.08, 0.07, 1.2, 0.9);
       if (o.last) { for (let j = 0; j <= k; j++) bell(note(PENTA[j % PENTA.length] - 5), t + 0.3 + j * 0.09, 0.1, 2.2, 0.9); }   // 最後の星で、これまでの音が和音になる
       noise(t, 0.6, 6000, 9000, 0.7, 0.05, 'highpass', 0.6); tone(98, t, 0.5, 'sine', 0.18, 0.01, sfx, 70); },
+    pin: o => { const t = now(), f = 261.63 * Math.pow(2, (o.step || 0) / 12);   // S11：らせんのピン（C4 から 3 オクターブ上の C7 まで）
+      tone(f, t, 0.55, 'sine', 0.085, 0.002, sfx, null, 0.55); tone(f * 2.0, t, 0.22, 'sine', 0.03, 0.001, sfx, null, 0.45); tone(f * 4.07, t, 0.06, 'triangle', 0.012, 0.001);
+      if (o.last) [0, 4, 7, 12].forEach((st, i) => bell(f * Math.pow(2, (st - 12) / 12), t + 0.12 + i * 0.07, 0.07, 2.0, 0.9)); },
+    rise: o => { const t = now(), T = o.T || 3.5;   // S11：塔のせり上がり
+      noise(t, T, 160, 70, 0.8, 0.16, 'lowpass', 0.3); tone(55, t, T, 'sine', 0.16, 0.3, sfx, 82);
+      for (let k = 0; k * 0.14 < T - 0.1; k++) noise(t + k * 0.14, 0.025, 2600, 2000, 3, 0.04 + 0.02 * (k % 4 === 0), 'highpass');
+      [0, 4, 7].forEach((st, i) => bell(note(st - 12), t + i * 0.12, 0.08, 1.6, 0.8)); },
+    brassTick: o => { const t = now(), st = o.step || 0, f = 1480 * Math.pow(2, [0, 3, 7][st % 3] / 12);   // S10改修：分銅3段階の乾いた真鍮クリック
+      tone(f, t, 0.065, 'triangle', 0.11, 0.001, sfx, null, 0.25); tone(f * 2.42, t, 0.032, 'sine', 0.055, 0.001); noise(t, 0.018, 4200, 3200, 3.5, 0.07, 'highpass'); },
+    brassLatch: () => { const t = now();   // S10改修：天秤ポケット確定の重い真鍮ラッチ音
+      tone(196, t, 0.22, 'sine', 0.20, 0.002, sfx, 118, 0.3); bell(987, t + 0.01, 0.11, 0.65, 0.5); noise(t, 0.045, 2800, 1400, 2.2, 0.14, 'bandpass'); },
+    brassPin: o => { const t = now(), v = clamp((o.v || 1) / 2.2, 0.25, 1), f = 1175 * Math.pow(2, ((o.i || 0) % 6) * 2 / 12);   // S10改修：千鳥ピン接触の軽い真鍮音
+      tone(f, t, 0.18, 'sine', 0.11 * v, 0.001, sfx, null, 0.45); tone(f * 2.75, t, 0.08, 'sine', 0.045 * v, 0.001); noise(t, 0.02, 3600, 2600, 3, 0.05 * v, 'highpass'); },
+    brassEdge: () => { const t = now();   // S10改修：精密区間の縁すれすれ通過ティック
+      tone(2960, t, 0.028, 'sine', 0.035, 0.001); noise(t, 0.012, 5200, 4200, 4, 0.03, 'highpass'); },
     connect: () => { const t = now(); [0, 4, 7, 11, 14, 19].forEach((st, i) => bell(note(st - 12), t + i * 0.05, 0.1, 2.6, 1.0)); noise(t, 1.6, 5000, 12000, 0.5, 0.06, 'highpass', 0.9); },
     door: () => { const t = now(); tone(330, t, 0.25, 'triangle', 0.06, 0.01, sfx, 440, 0.4); noise(t, 0.2, 900, 2400, 1.5, 0.06, 'bandpass'); },
     boost: () => { const t = now(); noise(t, 0.4, 500, 3800, 2.5, 0.22, 'bandpass', 0.3); tone(220, t, 0.35, 'sawtooth', 0.035, 0.01, sfx, 660); },
@@ -6321,16 +7690,30 @@ const Cam = {
   },
   toggle() { this.mode = { soft: 'follow', follow: 'board', board: 'soft' }[this.mode] || 'soft'; this.yawOff = this.pitchOff = 0; UI.syncCam(); return this.mode; },
   set(m) { if (m === 'toggle') return this.toggle(); if (m === 'board' || m === 'follow' || m === 'soft') { this.mode = m; this.yawOff = this.pitchOff = 0; UI.syncCam(); } return this.mode; },
+  titleMix: 1, titleAng: 0,
   update(dt) {
-    let yaw = this.baseYaw() + this.yawOff + (UI.titleOpen ? Math.sin(G.time * 0.16) * 0.12 : 0);
-    let pitch = clamp(this.basePitch() + this.pitchOff, 0.2, 1.25);
-    let dMul = 1;
-    if (G.state === 'intro' && this.introShot(dt, yaw, pitch)) return;
+    const titleWant = UI.titleOpen ? 1 : 0;
+    if (this.snap || dt === 0) this.titleMix = titleWant;
+    else this.titleMix += (titleWant - this.titleMix) * (1 - Math.exp(-4.5 * dt));
+    if (UI.titleOpen) this.titleAng = (this.titleAng + dt * 0.105) % TAU;
+    const yawPlay = this.baseYaw() + this.yawOff;
+    let yawDiff = ((this.titleAng + Math.PI) % TAU + TAU) % TAU - Math.PI;
+    let yaw = yawPlay + yawDiff * this.titleMix;
+    let pitch = clamp(this.basePitch() + this.pitchOff - (this.portrait() ? 0.08 : 0.05) * this.titleMix, 0.2, 1.25);
+    let dMul = 1 + (this.portrait() ? 0.16 : 0.19) * this.titleMix;
+    if (G.state === 'intro' && this.introShot(dt, yawPlay, clamp(this.basePitch() + this.pitchOff, 0.2, 1.25))) return;
     // ゴール後は真上からの俯瞰
     this.overMix += ((G.state === 'clear' ? 1 : 0) - this.overMix) * (1 - Math.exp(-1.3 * dt));
     if (this.overMix > 0.001) { pitch = lerp(pitch, 1.5, this.overMix); yaw = lerp(yaw, this.portrait() ? Math.PI / 2 : 0, this.overMix); }
     this.yawNow = yaw; this.pitchNow = pitch;
-    const f = this.fit(yaw, pitch, camera.aspect);
+    // タイトル展示のゆっくり360°回転時は 0° / 90° のキャッシュ2点補間で毎フレームの再探索を回避
+    let f;
+    if (this.titleMix > 0.001 && UI.titleOpen) {
+      const f0 = this.fit(this.baseYaw(), pitch, camera.aspect);
+      const f90 = this.fit(this.baseYaw() + Math.PI / 2, pitch, camera.aspect);
+      const s2 = Math.sin(this.titleAng + this.yawOff) ** 2;
+      f = { d: lerp(f0.d, f90.d, s2), ctr: _v3.copy(f0.ctr).lerp(f90.ctr, s2) };
+    } else f = this.fit(yaw, pitch, camera.aspect);
     const playView = !UI.titleOpen && G.state !== 'intro' && G.state !== 'clear';
     const want = !playView ? 0 : this.mode === 'follow' ? 1 : this.mode === 'soft' ? (BOARD.big ? this.BIG_SOFT : this.SOFT) : 0;
     this.zoomMix += (want - this.zoomMix) * (1 - Math.exp(-5 * dt));
@@ -6347,6 +7730,13 @@ const Cam = {
       this.dist = lerp(f.d, this.nearD, clamp(this.zoomMix / this.BIG_SOFT, 0, 1)) * (1 - this.kick * 0.02) * dMul;
     } else this.dist = f.d * lerp(1, this.FOLLOW_K, this.zoomMix) * (1 - this.kick * 0.02) * dMul;
     this.kick *= Math.exp(-6 * dt);
+    if (this.titleMix > 0.001) {
+      // タイトル時は3D盤を画面の上〜中央の展示空間へ持ち上げ、下部のプレート帯と重ならないようにする
+      const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * this.dist;
+      const shiftDown = (this.portrait() ? 0.27 : 0.34) * halfH * this.titleMix;
+      const ux = -Math.sin(yaw) * Math.sin(pitch), uy = Math.cos(pitch), uz = -Math.cos(yaw) * Math.sin(pitch);
+      this.target.x -= ux * shiftDown; this.target.y -= uy * shiftDown; this.target.z -= uz * shiftDown;
+    }
     camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * this.dist, this.target.y + Math.sin(pitch) * this.dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * this.dist);
     camera.lookAt(this.target);
   },
@@ -6375,8 +7765,15 @@ const $ = id => document.getElementById(id);
 const fmt = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(2); };
 const bestKey = n => 'hoshimizo.best.' + n;
 const getBest = n => { try { const v = parseFloat(localStorage.getItem(bestKey(n))); return isFinite(v) ? v : null; } catch (e) { return null; } };
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+const SEASON_SVG = {
+  spring: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.2c1.2 1.8 1.2 3.8 0 5.2-1.2-1.4-1.2-3.4 0-5.2zm6.4 4.7c-1.4 1.6-3.3 2.2-5 1.5.9-1.6 2.8-2.3 5-1.5zm-2.4 7.5c-1.9-.6-3.1-2.2-3-4 1.8.4 3 2 3 4zm-8 0c0-1.8 1.2-3.4 3-4 .1 1.8-1.1 3.4-3 4zM2.6 6.9c2.2-.8 4.1-.1 5 1.5-1.7.7-3.6.1-5-1.5z"/><circle cx="9" cy="9.2" r="1.1" fill="currentColor" stroke="none"/></svg>',
+  summer: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.6l1.7 5.7 5.7 1.7-5.7 1.7L9 16.4l-1.7-5.7L1.6 9l5.7-1.7z"/><circle cx="9" cy="9" r="3.4" opacity=".6"/></svg>',
+  autumn: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2l1.6 4.1 4.2-.8-2.3 3.4 3 2.1-4.1.6L10.2 15 9 13.3 7.8 15l-1.2-3.6-4.1-.6 3-2.1-2.3-3.4 4.2.8z"/><path d="M9 13.3V16.6"/></svg>',
+  winter: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.8v14.4M2.8 5.4l12.4 7.2M15.2 5.4L2.8 12.6M7.2 3.6L9 5.4l1.8-1.8M7.2 14.4L9 12.6l1.8 1.8M4.6 7.9l.8-2.4-2.4-.6M13.4 10.1l-.8 2.4 2.4.6M13.4 7.9l-.8-2.4 2.4-.6M4.6 10.1l.8 2.4-2.4.6"/></svg>',
+};
 const UI = {
-  titleOpen: true, sel: 0, lastTimer: '', wakeLock: null,
+  titleOpen: true, sel: 0, lastTimer: '', wakeLock: null, cardsBuilt: false,
   init() {
     this.renderCards();
     $('bPlay').onclick = () => this.play();
@@ -6389,6 +7786,13 @@ const UI = {
     $('bMenu').onclick = () => this.showTitle();
     $('bGyro').onclick = () => { Sound.unlock(); Gyro.setEnabled(!Gyro.enabled); Sound.play('ui'); this.syncGyro(); this.syncInput(); };
     $('bGyroIn').onclick = () => this.toggleGyroInPlay();
+    // タイトルのステージ送り・ヘルプ開閉・マウスホイール横スクロール
+    $('bStagePrev').onclick = () => this.selectStage(this.sel - 1);
+    $('bStageNext').onclick = () => this.selectStage(this.sel + 1);
+    const toggleHelp = (show) => { const p = $('helpPop'); const on = show == null ? p.classList.contains('hidden') : !!show; p.classList.toggle('hidden', !on); $('bHelp').setAttribute('aria-expanded', on ? 'true' : 'false'); };
+    $('bHelp').onclick = () => { Sound.unlock(); Sound.play('ui'); toggleHelp(); };
+    $('bHelpClose').onclick = () => toggleHelp(false);
+    $('stageCards').addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { $('stageCards').scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
     // 下の帯の高さを測り、案内文とスティックをその上に置く（ボタンの出し入れ・文字の変化・画面の回転に追従）
     const dock = $('dock'), setDockH = () => { const s = $('hud').style; s.setProperty('--dockH', dock.offsetHeight + 'px'); s.setProperty('--barH', $('bar').offsetHeight + 'px'); };
     if (window.ResizeObserver) { const ro = new ResizeObserver(setDockH); ro.observe(dock); ro.observe($('bar')); } else addEventListener('resize', setDockH);
@@ -6398,10 +7802,69 @@ const UI = {
     $('bSel').onclick = () => { $('result').classList.add('hidden'); this.showTitle(); };
     this.syncMute(); this.syncCam(); this.syncGyro();
   },
+  selectStage(idx, silent = false) {
+    const n = clamp(idx, 0, STAGES.length - 1);
+    this.sel = n;
+    if (!silent) { Sound.unlock(); Sound.play('ui'); }
+    setStage(n + 1);
+    this.syncTitleStage(STAGES[n], true);
+  },
   renderCards() {
-    $('stageCards').innerHTML = STAGES.map((d, i) => { const b = getBest(d.id);
-      return `<div class="card${i === this.sel ? ' sel' : ''}" data-i="${i}"><div class="n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][i]}</div><div class="j">${d.name}</div><div class="lv">${d.level}</div><div class="b">${b ? 'BEST ' + fmt(b) : '― ― ―'}</div></div>`; }).join('');
-    document.querySelectorAll('.card').forEach(c => c.onclick = () => { this.sel = +c.dataset.i; Sound.unlock(); Sound.play('ui'); this.renderCards(); setStage(this.sel + 1); });
+    if (!this.cardsBuilt) {
+      let html = '';
+      STAGES.forEach((d, i) => {
+        if (i === 7) html += '<div class="t-sep" aria-hidden="true"><span>四季</span></div>';
+        const th = getStageTheme(d), b = getBest(d.id), sea = th.season;
+        const badge = sea
+          ? `<span class="crest">${SEASON_SVG[sea]}<span>${th.seasonLabel}</span></span>`
+          : `<span class="lv">★${d.id}</span>`;
+        html += `<div class="card${sea ? ' seasonal' : ''}${i === this.sel ? ' sel' : ''}" data-i="${i}" role="option" aria-selected="${i === this.sel ? 'true' : 'false'}" style="--c-acc:${th.uiAccent};--c-bg0:${th.uiBg[0]};--c-bg1:${th.uiBg[1]}">`
+          + `<div class="c-top"><span class="n">${ROMAN[i]}</span>${badge}</div>`
+          + `<div class="j">${d.name}</div>`
+          + `<div class="b">${b ? 'BEST ' + fmt(b) : (sea ? '★' + d.id + ' · ― ―' : '― ― ―')}</div>`
+          + `</div>`;
+      });
+      $('stageCards').innerHTML = html;
+      let dotsHtml = '';
+      STAGES.forEach((d, i) => {
+        if (i === 7) dotsHtml += '<span class="t-dot-gap"></span>';
+        const th = getStageTheme(d);
+        dotsHtml += `<button class="t-dot${th.season ? ' sea' : ''}${i === this.sel ? ' on' : ''}" data-i="${i}" style="--d-acc:${th.uiAccent}" title="${ROMAN[i]} ${d.name}" aria-label="${ROMAN[i]} ${d.name}"></button>`;
+      });
+      $('stageDots').innerHTML = dotsHtml;
+      document.querySelectorAll('#stageCards .card').forEach(c => c.onclick = () => this.selectStage(+c.dataset.i));
+      document.querySelectorAll('#stageDots .t-dot').forEach(dot => dot.onclick = () => this.selectStage(+dot.dataset.i));
+      this.cardsBuilt = true;
+    } else {
+      document.querySelectorAll('#stageCards .card').forEach(c => {
+        const i = +c.dataset.i, d = STAGES[i], th = getStageTheme(d), b = getBest(d.id);
+        c.querySelector('.b').textContent = b ? 'BEST ' + fmt(b) : (th.season ? '★' + d.id + ' · ― ―' : '― ― ―');
+      });
+    }
+    this.syncTitleStage(STAGES[this.sel], false);
+  },
+  syncTitleStage(def, smoothScroll) {
+    if (!def) return;
+    const i = clamp(def.id - 1, 0, STAGES.length - 1);
+    this.sel = i;
+    const th = getStageTheme(def), b = getBest(def.id);
+    if ($('tCurNum')) $('tCurNum').textContent = ROMAN[i] + (th.seasonLabel ? ' · ' + th.seasonLabel : '');
+    if ($('tCurName')) $('tCurName').textContent = def.name;
+    if ($('tCurEn')) $('tCurEn').textContent = def.en || '';
+    if ($('tCurBest')) $('tCurBest').textContent = b ? 'BEST ' + fmt(b) : '★' + def.id;
+    let selEl = null;
+    document.querySelectorAll('#stageCards .card').forEach(c => {
+      const on = +c.dataset.i === i;
+      c.classList.toggle('sel', on);
+      c.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) selEl = c;
+    });
+    document.querySelectorAll('#stageDots .t-dot').forEach(d => d.classList.toggle('on', +d.dataset.i === i));
+    if ($('bStagePrev')) $('bStagePrev').disabled = i <= 0;
+    if ($('bStageNext')) $('bStageNext').disabled = i >= STAGES.length - 1;
+    if (selEl && this.titleOpen && selEl.scrollIntoView) {
+      selEl.scrollIntoView({ behavior: smoothScroll ? 'smooth' : 'instant', inline: 'center', block: 'nearest' });
+    }
   },
   play() {
     // iOS：許可ダイアログはこのタップの中で最初に出す
@@ -6415,8 +7878,8 @@ const UI = {
     try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => this.wakeLock = w).catch(() => {}); } catch (e) {}
   },
   again() { Sound.play('ui'); $('result').classList.add('hidden'); startRun(G.mode === 'demo' && G.demoLoop ? 'demo' : 'play'); },
-  hideTitle() { this.titleOpen = false; document.body.classList.remove('titleopen'); $('title').classList.add('fade'); setTimeout(() => { if (!this.titleOpen) $('title').classList.add('hidden'); }, 450); },
-  showTitle() { this.titleOpen = true; document.body.classList.add('titleopen'); this.renderCards(); $('title').classList.remove('hidden', 'fade'); $('result').classList.add('hidden'); this.toast(false); G.state = 'title'; G.mode = 'play'; G.demoLoop = false; resetRun(); },
+  hideTitle() { this.titleOpen = false; $('helpPop').classList.add('hidden'); $('bHelp').setAttribute('aria-expanded', 'false'); document.body.classList.remove('titleopen'); $('title').classList.add('fade'); setTimeout(() => { if (!this.titleOpen) $('title').classList.add('hidden'); }, 450); },
+  showTitle() { this.titleOpen = true; Cam.titleAng = 0; Cam.yawOff = 0; Cam.pitchOff = 0; document.body.classList.add('titleopen'); $('title').classList.remove('hidden', 'fade'); $('result').classList.add('hidden'); this.toast(false); G.state = 'title'; G.mode = 'play'; G.demoLoop = false; resetRun(); this.renderCards(); },
   syncInput() {
     const gy = Gyro.active && Gyro.calibrated;
     $('stick').classList.toggle('hidden', gy || this.titleOpen);
@@ -6459,9 +7922,8 @@ const UI = {
   ready(on) { $('readyCue').classList.toggle('show', !!on); },
   setStage(def) {
     $('hudStage').textContent = def.name;
-    const bg = (def.palette && def.palette.bg) || ['#2a2a52', '#161735', '#0b0b1c', '#050510'];
-    document.body.style.background = `radial-gradient(120% 95% at 50% 34%, ${bg[0]} 0%, ${bg[1]} 36%, ${bg[2]} 70%, ${bg[3]} 100%)`;
-    skyU.uBg0.value.set(bg[0]); skyU.uBg1.value.set(bg[1]); skyU.uBg2.value.set(bg[2]); skyU.uBg3.value.set(bg[3]);
+    applyStageBackdrop(def, S);
+    this.syncTitleStage(def, false);
     $('gates').innerHTML = '<span>星のゲート</span>' + S.gates.map(() => '<i></i>').join('') + '<span id="gateNum">0 / ' + S.gates.length + '</span>';
     $('starNames').innerHTML = S.con ? S.con.stars.map(s2 => '<span>' + s2.name + '</span>').join('') : '';
     $('relayBox').classList.toggle('hidden', !S.relays.length);
@@ -6598,6 +8060,7 @@ function visualUpdate(dt) {
   }
   if (S.dyn.armillary) { S.dyn.armillary.rings.rotation.set(0.41, t * 0.35, 0.2); S.dyn.armillary.core.rotation.y = t * 0.5; }
   if (S.dyn.moonOrb) S.dyn.moonOrb.rotation.y = t * 0.2;
+  celestialDome.rotation.y = t * (TAU / 240);   // 天球星図ドーム：1周4分の極微速回転
   updateConstellation(dt);
   updateBigFade(dt);
   // 流れ星（ときどき）
@@ -6644,6 +8107,8 @@ function visualUpdate(dt) {
   for (const w of S.rivers || []) updateRiverLook(w, dt);
   for (const w of S.trapdoors || []) updateTrapLook(w);   // 改善1（S8）：落とし戸の板と灯り
   if (S.bal) updateBalanceLook(S.bal, dt);   // S10：天秤の腕・灯り・止め・分銅・指針
+  if (S.def.theme === 'autumn') updateAutumnWorkshop(dt);   // S10改修：千鳥ピン揺れ・傾き連動水準針・小動き・明暗
+  if (S.tw) updateTowerLook(S.tw, dt);      // S11：塔の高さ・錠の灯り・ロックの棒・ピン
   // 土星（S6）：輪を回す（惑星の球は止まっている）
   for (const w of S.plates) w.mesh.rotation.y = plateTheta(w);
   Shards.update(dt);
@@ -6651,7 +8116,7 @@ function visualUpdate(dt) {
   for (const r of S.relays) {
     r.raise += ((r.passed ? 1 : 0) - r.raise) * (1 - Math.exp(-3.5 * dt));
     const h = lerp(0.42, 0.98, r.raise), sw = 0.12 * Math.sin(t * 3.1 + r.k) * (0.3 + 0.7 * r.raise);
-    r.flag.matrix.copy(r.basis).premultiply(_m4.makeTranslation(r.foot[0], r.foot[1] + 0.07 + h, r.foot[2])).multiply(_m4b.makeRotationY(sw));
+    r.flag.matrix.copy(r.basis).premultiply(_m4.makeTranslation(r.foot[0], r.foot[1] + 0.07 + h - (r.tw ? S.tw.off : 0), r.foot[2])).multiply(_m4b.makeRotationY(sw));   // S11：塔の上の旗は塔と一緒に動く
     if (r.passed) r.glow.k += (0.9 + 0.2 * Math.sin(t * 4 + r.k) - r.glow.k) * (1 - Math.exp(-2.5 * dt)); else r.glow.k = 0.12;
   }
   // 扉
@@ -6897,7 +8362,8 @@ function read() {
     ...(S.gearTrains && S.gearTrains.length ? { gear: b.mode === 'gear' ? { leg: b.leg, pocket: b.pk, ang: r4(b.gAng) } : null } : {}),
     ...(C.trapdoors.length ? { trap: C.trapdoors.map(w => w.pans.map(p => r4(trapC(w, p.k)))) } : {}),   // 改善1（S8）：落とし戸の板ごとの開き具合（検証用）
     ...(C.holePlates.length ? { holes: C.holePlates.map(w => w.holes.map(h => ({ s: r4(h.s), u: h.u, rf: h.rf }))) } : {}),   // 改善1（S9）：穴（検証用）
-    ...(S.bal ? { balance: { target: S.bal.target, pose: r4(S.bal.pose), aligned: S.bal.arms.map(a => balAligned(a)), swings: S.bal.swings, blocks: S.bal.blocks, wrongSteps: S.bal.wrongSteps, log: S.bal.log.slice() } } : {}),   // S10：天秤（検証用）
+    ...(S.bal ? { balance: { target: S.bal.target, pose: r4(S.bal.pose), aligned: S.bal.arms.map(a => balAligned(a)), swings: S.bal.swings, blocks: S.bal.blocks, wrongSteps: S.bal.wrongSteps, log: S.bal.log.slice(), ...(S.def.theme === 'autumn' ? { pockets: S.bal.weights.map(w => ({ on: w.on, hold: r4(w.hold || 0), stage: w.stage || 0 })), slalomHits: S.slalomHits || 0, inclAngles: S.autumnW ? S.autumnW.incls.map(x => r4(x.ang)) : [] } : {}) } } : {}),   // S10：天秤（検証用）
+    ...(S.tw ? { tower: { phase: S.tw.phase, off: r4(S.tw.off), up: towerUp(), rises: S.tw.rises, blocks: S.tw.blocks, wrong: S.tw.wrong, plucks: S.tw.plucks, pinsPlayed: S.tw.pins.filter(p => p.played).length, pins: S.tw.pins.length, log: S.tw.log.slice() } } : {}),   // S11：塔（検証用）
     ...(S.wheels && S.wheels.length ? { wheel: S.wheels.map(w => ({ angle: r4(((wheelAngle(w, 0) % TAU) + TAU) % TAU), next: r4(wheelNext(w)) })), wheelRide: b.mode === 'wheel' ? r4(b.wth) : null, wheelRet: b.mode === 'wret' ? r4(b.rs) : null, bridges: (S.bridges || []).map(w => r4(bridgeC(w))) } : {}),
   };
 }
@@ -6964,7 +8430,7 @@ window.__MARBLE = {
   set blurEnabled(v) { Focus.forced = true; Focus.set(v); },
   setGyroSensitivity(k) { Gyro.sens = clamp(+k || 1, 0.4, 2.5); return Gyro.sens; },
   audit, events: () => G.events.slice(), jumps: () => JSON.parse(JSON.stringify(G.jumps)), stages: () => STAGES.map(d => ({ id: d.id, name: d.name, length: +buildCourse(THREE, d).L.toFixed(2) })),
-  version: 'hoshimizo-1.0', _cam: Cam, _glass: glassU, _dbg: { get G() { return G; }, get S() { return S; }, CFG, demoInput, Gyro, Stick, Keys, Sound, PERF, Focus, focusRT, focusU, plateHotAt, plateLocal, PLATE, earthTex, get glows() { return { used: glowList.length, cap: glows.count }; } },
+  version: 'hoshimizo-1.0', _cam: Cam, _glass: glassU, _dbg: { get G() { return G; }, get S() { return S; }, CFG, demoInput, Gyro, Stick, Keys, Sound, PERF, Focus, focusRT, focusU, plateHotAt, plateLocal, PLATE, earthTex, platformCanvas, celestialCanvas, celestialDome, skyU, scene, STAGE_THEMES, get glows() { return { used: glowList.length, cap: glows.count }; } },
 };
 
 // ---------------------------------------------------------------- 起動
