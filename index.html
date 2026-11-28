@@ -2630,7 +2630,7 @@ function updateParticles(dt) {
     const damp = Math.exp(-1.6 * dt);
     P_VEL[i*3] *= damp; P_VEL[i*3+1] *= damp; P_VEL[i*3+2] *= damp;
     parts.pos[i*3] += P_VEL[i*3] * dt; parts.pos[i*3+1] += P_VEL[i*3+1] * dt; parts.pos[i*3+2] += P_VEL[i*3+2] * dt;
-    const k = t * t * (1.2 - 0.2 * Math.sin(i + P_LIFE[i] * 30));   // ちらつき
+    const k = t * t * (1.07 - 0.07 * Math.sin(i + P_LIFE[i] * 12));   // 穏やかなきらめき
     parts.col[i*3] = P_COL[i*3] * k; parts.col[i*3+1] = P_COL[i*3+1] * k; parts.col[i*3+2] = P_COL[i*3+2] * k;
     parts.size[i] = P_SIZE[i] * (0.4 + 0.6 * t);
   }
@@ -6416,9 +6416,16 @@ function buildGrand(st, def) {
 const _bw = new THREE.Vector3(), _bb = new THREE.Vector3();
 function updateBigFade(dt) {
   if (!S.big) return;
+  if (G.state === 'clear') {
+    for (const o of S.big) {
+      o.a += (1 - o.a) * (1 - Math.exp(-3.5 * dt));
+      for (const m of o.mats) { m.opacity = o.a; m.depthWrite = o.a > 0.95; }
+    }
+    return;
+  }
   const active = (G.state === 'playing' || G.state === 'falling' || G.state === 'failed' || G.state === 'ready');
   _bb.fromArray(G.ball.p); board.localToWorld(_bb); const ballD = _bb.distanceTo(camera.position); _bb.project(camera);
-  const k = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const k = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.max(0.5, camera.zoom);
   for (const o of S.big) {
     let hit = false;
     for (const p of o.samples) {
@@ -7457,9 +7464,13 @@ function stepBasket(dt) {
 function clearRun() {
   G.state = 'clear'; G.clearAt = G.time;
   const K = S.basket;
-  for (let k = 0; k < 3; k++) setTimeout(() => burst(K.x + (Math.random() - 0.5) * 0.6, 1.2 + Math.random() * 0.6, K.z + (Math.random() - 0.5) * 0.6, 70, [0xffe6a0, 0xffc46a, 0xc8e6ff, 0xffd6f0, 0xffffff], 3.0, 0.38, 1.4, 1.2), k * 260);
-  burst(K.x, K.y + 0.3, K.z, 80, [0xfff0c8, 0xffffff, 0xc8e6ff], 2.2, 0.3, 1.2, 2.0);
-  S.basketGlow.k = 4;
+  for (let k = 0; k < 3; k++) setTimeout(() => {
+    if (G.state !== 'clear') return;
+    const a = k * 2.1 + 0.4, r = 0.38 + k * 0.14;
+    burst(K.x + Math.cos(a) * r, 1.15 + k * 0.22, K.z + Math.sin(a) * r, 36, [0xffe6a0, 0xffc46a, 0xc8e6ff, 0xffd6f0, 0xfff4d8], 2.6, 0.24, 1.35, 1.1);
+  }, 180 + k * 280);
+  burst(K.x, K.y + 0.34, K.z, 44, [0xfff0c8, 0xffe29a, 0xc8e6ff], 2.1, 0.22, 1.2, 1.7);
+  S.basketGlow.k = Math.max(S.basketGlow.k, 2.1);
   Sound.play('clear'); Haptic([30, 60, 30]);
   logEvent('clear', { timer: +G.timer.toFixed(3), falls: G.falls });
   UI.clear();
@@ -7980,24 +7991,130 @@ const Sound = (() => {
   };
 })();
 
-// ---------------------------------------------------------------- 14 カメラ（縁滑走・自動回転追従）
+// ---------------------------------------------------------------- 14 カメラ（区間固定＋ズーム方式／クリア俯瞰ちらつき防止）
 const _camFR = { p: [0, 0, 0], t: [0, 0, 0], l: [0, 0, 0], n: [0, 0, 0], half: 0.5, kap: 0 };
-const _camV0 = new THREE.Vector3(), _camV1 = new THREE.Vector3(), _camV2 = new THREE.Vector3(), _camV3 = new THREE.Vector3();
+const _camV0 = new THREE.Vector3(), _camV1 = new THREE.Vector3(), _camV2 = new THREE.Vector3(), _camV3 = new THREE.Vector3(), _camV4 = new THREE.Vector3();
+const _camCtr = new THREE.Vector3(), _camCtrRef = new THREE.Vector3();
+const _zoomCam = new THREE.PerspectiveCamera(27, 1, 0.1, 300);
+// ステージごとのカメラ区間定義（区間内は位置・角度を完全固定し、拡大縮小のみで玉の見え方を調整）
+const STAGE_ZONES = {
+  1: [
+    { from: 0.00, to: 0.34, yawRel:  0.14, pitchRel: 0.04 },
+    { from: 0.34, to: 0.68, yawRel: -0.14, pitchRel: 0.02 },
+    { from: 0.68, to: 1.00, yawRel: -0.18, pitchRel: 0.05 },
+  ],
+  2: [
+    { from: 0.00, to: 0.38, yawRel:  0.14, pitchRel: 0.04 },
+    { from: 0.38, to: 0.66, yawRel: -0.18, pitchRel: 0.06 },
+    { from: 0.66, to: 1.00, yawRel: -0.16, pitchRel: 0.00 },
+  ],
+  3: [
+    { from: 0.00, to: 0.38, yawRel:  0.14, pitchRel: 0.05 },
+    { from: 0.38, to: 0.72, yawRel:  0.18, pitchRel: 0.04 },
+    { from: 0.72, to: 1.00, yawRel: -0.16, pitchRel: 0.04 },
+  ],
+  4: [
+    { from: 0.00, to: 0.33, yawRel:  0.14, pitchRel: 0.00 },
+    { from: 0.33, to: 0.63, yawRel: -0.18, pitchRel: 0.08 },
+    { from: 0.63, to: 0.82, yawRel:  0.16, pitchRel: 0.06 },
+    { from: 0.82, to: 1.00, yawRel: -0.14, pitchRel: 0.04 },
+  ],
+  5: [
+    { from: 0.00, to: 0.30, yawRel:  0.14, pitchRel: 0.06 },
+    { from: 0.30, to: 0.62, yawRel: -0.18, pitchRel: 0.08 },
+    { from: 0.62, to: 0.84, yawRel:  0.16, pitchRel: 0.00 },
+    { from: 0.84, to: 1.00, yawRel: -0.14, pitchRel: 0.06 },
+  ],
+  6: [
+    { from: 0.00, to: 0.24, yawRel:  0.34, pitchRel: 0.08, prec: true },  // 土星の輪1・2
+    { from: 0.24, to: 0.51, yawRel: -0.28, pitchRel: 0.06 },              // 中盤〜星群
+    { from: 0.51, to: 0.74, yawRel: -0.16, pitchRel: -0.02 },             // 上り螺旋塔
+    { from: 0.74, to: 1.00, yawRel:  0.24, pitchRel: 0.03 },              // 下り螺旋塔〜月の盃
+  ],
+  7: [
+    { from: 0.00, to: 0.27, yawRel: -0.24, pitchRel: 0.05 },              // 下段〜中継1
+    { from: 0.27, to: 0.41, yawRel: -0.06, pitchRel: 0.08 },              // 上段進入
+    { from: 0.41, to: 0.52, yawRel:  0.34, pitchRel: 0.16, prec: true },  // ボウル1
+    { from: 0.52, to: 0.72, yawRel:  0.12, pitchRel: 0.06 },              // 中盤下り
+    { from: 0.72, to: 0.85, yawRel: -0.30, pitchRel: 0.15, prec: true },  // ボウル2
+    { from: 0.85, to: 1.00, yawRel:  0.28, pitchRel: 0.02 },              // 上り螺旋〜月の盃
+  ],
+  8: [
+    { from: 0.00, to: 0.21, yawRel:  0.30, pitchRel: 0.08, prec: true },  // 落とし戸・下り螺旋
+    { from: 0.21, to: 0.38, yawRel: -0.22, pitchRel: 0.12, prec: true },  // 2本レール
+    { from: 0.38, to: 0.52, yawRel:  0.08, pitchRel: 0.15, prec: true },  // 歯車・ぜんまいリフト
+    { from: 0.52, to: 0.64, yawRel:  0.28, pitchRel: 0.06 },              // 中盤下り
+    { from: 0.64, to: 0.86, yawRel: -0.30, pitchRel: 0.10 },              // 下段鉄琴ループ
+    { from: 0.86, to: 1.00, yawRel: -0.14, pitchRel: 0.08 },              // 最終直線〜月の盃
+  ],
+  9: [
+    { from: 0.00, to: 0.24, yawRel: -0.20, pitchRel: 0.08 },              // 下段〜ゲート1
+    { from: 0.24, to: 0.43, yawRel:  0.28, pitchRel: 0.16, prec: true },  // 穴あき板〜中盤
+    { from: 0.43, to: 0.61, yawRel: -0.32, pitchRel: 0.04, prec: true },  // 開閉橋1・水車ホイール
+    { from: 0.61, to: 0.77, yawRel:  0.10, pitchRel: 0.06 },              // 天の川ローラー
+    { from: 0.77, to: 0.92, yawRel:  0.34, pitchRel: 0.02 },              // 開閉橋2・上り螺旋
+    { from: 0.92, to: 1.00, yawRel:  0.12, pitchRel: 0.06 },              // 高台終盤〜月の盃
+  ],
+  10: [
+    { from: 0.00, to: 0.25, yawRel: -0.18, pitchRel: 0.10, prec: true },  // 千鳥ピンスラローム
+    { from: 0.25, to: 0.44, yawRel:  0.22, pitchRel: 0.12, prec: true },  // 天秤1
+    { from: 0.44, to: 0.66, yawRel:  0.32, pitchRel: 0.08 },              // 中段工房ループ
+    { from: 0.66, to: 0.81, yawRel: -0.24, pitchRel: 0.12, prec: true },  // 天秤2
+    { from: 0.81, to: 1.00, yawRel: -0.06, pitchRel: 0.06 },              // 下段終盤〜月の盃
+  ],
+  11: [
+    { from: 0.00, to: 0.15, yawRel: -0.14, pitchRel: 0.12, prec: true },  // 落とし戸・ゲート1
+    { from: 0.15, to: 0.27, yawRel: -0.32, pitchRel: 0.14, prec: true },  // 春：ぜんまいリフト
+    { from: 0.27, to: 0.43, yawRel:  0.24, pitchRel: 0.06, prec: true },  // 夏：水車ホイール
+    { from: 0.43, to: 0.58, yawRel:  0.34, pitchRel: 0.10, prec: true },  // 秋：十字大天秤
+    { from: 0.58, to: 0.78, yawRel:  0.14, pitchRel: -0.02 },             // 冬：循環らせん塔（下〜中段）
+    { from: 0.78, to: 0.955, yawRel: -0.14, pitchRel: -0.04 },            // 冬：循環らせん塔（中〜上段）
+    { from: 0.955, to: 1.00, yawRel: -0.26, pitchRel: 0.08, prec: true }, // 頂上ドック・2本ワイヤー〜月の盃
+  ],
+};
 const Cam = {
   mode: 'soft', overMix: 0, yawOff: 0, pitchOff: 0, zoomMix: 0, yawNow: 0.24, pitchNow: 0.56, dist: 21,
-  target: new THREE.Vector3(0, 0.6, 0.15), follow: new THREE.Vector3(), fitCache: {}, kick: 0,
-  BASE_YAW: 0.14, BASE_PITCH: 0.43, MX: 0.92, MY: 0.9, ZOOM: 0.94, CTR_DY: 0.22, FOLLOW_K: 0.5, SOFT: 0.3, BIG_SOFT: 0.72, nearD: 0,   // カバー画像の構図に合わせた値
-  // 自動追従（縁滑走オービット）用の状態
-  autoYaw: 0.14, yawVel: 0, autoPitch: 0.50, autoMix: 0, manualHold: 0, dragging: false,
-  lookOff: new THREE.Vector3(), camPosSmooth: new THREE.Vector3(), _stageId: -1, _inited: false, _titleExitYaw: null,
-  MANUAL_HOLD_SEC: 4.5,
+  target: new THREE.Vector3(0, 0.6, 0.15), follow: new THREE.Vector3(), fitCache: {}, zoneCache: {}, kick: 0,
+  BASE_YAW: 0.14, BASE_PITCH: 0.43, MX: 0.92, MY: 0.9, ZOOM: 0.94, CTR_DY: 0.22,
+  ZONE_TRANS_DUR: 0.52, ZONE_HYST: 0.035, CLEAR_DUR: 1.9,
+  // 区間固定＋光学ズーム用の状態
+  zoneIdx: 0, zoneCount: 1, optZoom: 1, inTransition: false, dragging: false,
+  camPosSmooth: new THREE.Vector3(),
+  _stageId: -1, _stageRev: 0, _seenRev: -1, _inited: false, _wasTitle: true, _lastP: -1,
+  _transT: 1, _transDur: 1, _transFrom: { tgt: new THREE.Vector3(), yaw: 0.14, pitch: 0.43, dist: 21 },
+  _clearing: false, _clearT: 0, _clearFrom: { tgt: new THREE.Vector3(), yaw: 0.14, pitch: 0.43, dist: 21, zoom: 1, zoomMix: 0, yawOff: 0, pitchOff: 0 },
   shortAngle(a) { return ((a + Math.PI) % TAU + TAU) % TAU - Math.PI; },
+  smootherstep(u) { u = clamp(u, 0, 1); return u * u * u * (u * (6 * u - 15) + 10); },
   portrait() { return camera.aspect < 0.92; },
   baseYaw() { return this.portrait() ? this.BASE_YAW + Math.PI / 2 : this.BASE_YAW; },
   basePitch() { return this.portrait() ? 0.74 : this.BASE_PITCH; },
   topH() { return S ? (S.topH || 3) : 3; },
+  getZones(id) { return STAGE_ZONES[id] || STAGE_ZONES[1]; },
+  findZone(zones, p) {
+    for (let i = 0; i < zones.length; i++) if (p < zones[i].to) return i;
+    return zones.length - 1;
+  },
+  applyOpticalZoom(z) {
+    const nz = clamp(z, 0.72, 2.2);
+    if (Math.abs(camera.zoom - nz) > 1e-5) {
+      camera.zoom = nz;
+      camera.updateProjectionMatrix();
+    }
+    if (typeof basePointScale === 'number' && basePointScale > 0) {
+      glows.pts.material.uniforms.uScale.value = parts.pts.material.uniforms.uScale.value = basePointScale * camera.zoom;
+    }
+  },
+  beginTransition(dur = this.ZONE_TRANS_DUR) {
+    this._transFrom.tgt.copy(this.target);
+    this._transFrom.yaw = this.yawNow;
+    this._transFrom.pitch = this.pitchNow;
+    this._transFrom.dist = this.dist;
+    this._transT = 0;
+    this._transDur = dur;
+    this.inTransition = true;
+  },
   // 盤全体（筐体〜一番高い置物）が画面に収まる距離を求める
-  // ref=true：従来の盤（10.10×6.60）で収めた場合（広い盤のプレイ中の距離の基準）
+  // ref=true：従来の盤（10.10×6.60）で収めた場合（広い盤の区間最小距離の基準）
   fit(yaw, pitch, aspect, ref = false) {
     const key = [yaw.toFixed(3), pitch.toFixed(3), aspect.toFixed(3), this.topH().toFixed(2), ref ? 'ref' : ''].join();
     if (this.fitCache[key]) return this.fitCache[key];
@@ -8048,154 +8165,226 @@ const Cam = {
     }
     return (this.fitCache[key] = { d: hi, ctr });
   },
-  // 連続回転時にキャッシュ肥大・毎フレーム探索を防ぐ 0° / 90° 2点補間
-  fitFast(yaw, pitch, aspect, ref = false) {
-    const pq = Math.round(pitch * 25) / 25;
-    const f0 = this.fit(0, pq, aspect, ref);
-    const f90 = this.fit(Math.PI / 2, pq, aspect, ref);
+  // 連続 pitch 補間（量子化段差と共有ベクトル上書きを完全に解消）
+  fitSmooth(yaw, pitch, aspect, ref = false, outCtr = _camV3) {
+    const pC = clamp(pitch, 0.20, 1.52);
+    const p0 = Math.floor(pC * 25) / 25;
+    const p1 = Math.min(1.52, p0 + 0.04);
+    const fp = p1 > p0 ? (pC - p0) / (p1 - p0) : 0;
     const s2 = Math.sin(yaw) ** 2;
-    return { d: lerp(f0.d, f90.d, s2), ctr: _camV3.copy(f0.ctr).lerp(f90.ctr, s2) };
+    const a0 = this.fit(0, p0, aspect, ref), a90 = this.fit(Math.PI / 2, p0, aspect, ref);
+    const d0 = lerp(a0.d, a90.d, s2);
+    outCtr.copy(a0.ctr).lerp(a90.ctr, s2);
+    if (fp > 1e-4) {
+      const b0 = this.fit(0, p1, aspect, ref), b90 = this.fit(Math.PI / 2, p1, aspect, ref);
+      const d1 = lerp(b0.d, b90.d, s2);
+      _camV4.copy(b0.ctr).lerp(b90.ctr, s2);
+      outCtr.lerp(_camV4, fp);
+      return { d: lerp(d0, d1, fp), ctr: outCtr };
+    }
+    return { d: d0, ctr: outCtr };
   },
-  // コース先読み方向とローカル先読みオフセット・目標方位角（盤ローカル座標系なので盤傾きに揺れない）
-  computeGoal(useInertia = true) {
-    const b = G.ball, C = S.C;
-    const isF = this.mode === 'follow';
-    const bx = b.p[0], by = Math.max(-1, b.p[1]), bz = b.p[2];
-    const s0 = G.state === 'ready' ? S.def.startS : clamp(b.s, 0, C.L);
-    let fx = 0, fz = 0, lox = 0, loy = 0, loz = 0;
-    let freezeYaw = (b.mode === 'fall' || b.mode === 'crack' || b.mode === 'basket');
-    if (b.mode === 'bowl' && b.bowl) {
-      const w = b.bowl;
-      C.frame(clamp(w.sLand, 0, C.L), _camFR);
-      const dx = _camFR.p[0] - w.x, dz = _camFR.p[2] - w.z, dl = Math.hypot(dx, dz) || 1;
-      fx = dx / dl; fz = dz / dl;
-      lox = (w.x - bx) * 0.6 + fx * 0.65; loy = -0.1; loz = (w.z - bz) * 0.6 + fz * 0.65;
-    } else if (b.mode === 'lift' && b.lift) {
-      const w = b.lift;
-      C.frame(clamp(w.sOut, 0, C.L), _camFR);
-      const dx = _camFR.p[0] - w.x, dz = _camFR.p[2] - w.z, dl = Math.hypot(dx, dz) || 1;
-      fx = dx / dl; fz = dz / dl;
-      lox = (w.x - bx) * 0.55 + fx * 0.65; loy = 0.08; loz = (w.z - bz) * 0.55 + fz * 0.65;
-    } else if ((b.mode === 'wheel' || b.mode === 'wret') && b.wheel) {
-      const w = b.wheel;
-      C.frame(clamp(w.sOut, 0, C.L), _camFR);
-      const dx = _camFR.p[0] - bx, dz = _camFR.p[2] - bz, dl = Math.hypot(dx, dz) || 1;
-      fx = dx / dl; fz = dz / dl;
-      lox = fx * 0.7; loy = 0.25; loz = fz * 0.7;
-    } else {
-      C.frame(s0, _camFR);
-      const p0x = _camFR.p[0], p0y = _camFR.p[1], p0z = _camFR.p[2];
-      const t0x = _camFR.t[0], t0z = _camFR.t[2];
-      const dsList = BOARD.big ? [1.2, 2.5, 4.2, 6.2] : [0.9, 1.9, 3.2, 4.8];
-      const ws = [0.28, 0.32, 0.25, 0.15];
-      for (let k = 0; k < dsList.length; k++) {
-        C.frame(Math.min(C.L, s0 + dsList[k]), _camFR);
-        const dx = _camFR.p[0] - p0x, dz = _camFR.p[2] - p0z, dl = Math.hypot(dx, dz);
-        if (dl > 0.15) { fx += (dx / dl) * ws[k]; fz += (dz / dl) * ws[k]; }
-      }
-      let fl = Math.hypot(fx, fz);
-      if (fl < 0.18) {
-        fx = 0; fz = 0;
-        for (const d of [0.6, 1.4]) {
-          C.frame(Math.min(C.L, s0 + d), _camFR);
-          const dx = _camFR.p[0] - p0x, dz = _camFR.p[2] - p0z, dl = Math.hypot(dx, dz);
-          if (dl > 0.08) { fx += dx / dl; fz += dz / dl; }
+  fitFast(yaw, pitch, aspect, ref = false) { return this.fitSmooth(yaw, pitch, aspect, ref, _camV3); },
+  // 指定区間の固定カメラ位置・注視点・距離を計算してキャッシュ
+  fitZone(zi, aspect) {
+    const zones = this.getZones(S ? S.def.id : 1);
+    const idx = clamp(zi | 0, 0, zones.length - 1);
+    const key = [S ? S.def.id : 1, idx, aspect.toFixed(3), this.topH().toFixed(2)].join();
+    if (this.zoneCache[key]) return this.zoneCache[key];
+    const z = zones[idx];
+    const isPort = aspect < 0.92;
+    const yaw = this.baseYaw() + z.yawRel;
+    const pitch = clamp(this.basePitch() + z.pitchRel, 0.30, 1.05);
+    const C = S.C;
+    const s0 = Math.max(0, z.from - 0.015) * C.L;
+    const s1 = Math.min(1, z.to + 0.025) * C.L;
+    const pts = [];
+    const N = 28;
+    for (let i = 0; i <= N; i++) {
+      const s = lerp(s0, s1, i / N);
+      C.frame(s, _camFR);
+      const hw = _camFR.half + 0.42;
+      const px = _camFR.p[0], py = _camFR.p[1], pz = _camFR.p[2];
+      const lx = _camFR.l[0] * hw, ly = _camFR.l[1] * hw, lz = _camFR.l[2] * hw;
+      pts.push([px - lx, py - ly - 0.1, pz - lz], [px + lx, py + ly - 0.1, pz + lz]);
+      pts.push([px - lx, py - ly + 0.62, pz - lz], [px + lx, py + ly + 0.62, pz + lz]);
+    }
+    // 区間に含まれるギミック（リフト・歯車・水車・ボウル・月の盃）の広がりも収める
+    for (const f of S.footprints) {
+      if (f.s0 != null && f.s1 != null && f.s1 >= s0 - 1.0 && f.s0 <= s1 + 1.0) {
+        const btm = f.bottom ?? 0;
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+          pts.push([f.x + sx * f.r, btm, f.z + sz * f.r], [f.x + sx * f.r, f.top, f.z + sz * f.r]);
         }
-        fl = Math.hypot(fx, fz);
       }
-      if (fl > 0.05) { fx /= fl; fz /= fl; }
-      else { const tl = Math.hypot(t0x, t0z) || 1; fx = t0x / tl; fz = t0z / tl; }
-      // 先読み注視オフセット（進行方向先のコースを見せる）
-      const aheadS = Math.min(C.L, s0 + (isF ? 2.8 : 2.3));
-      C.frame(aheadS, _camFR);
-      const kL = isF ? 0.56 : 0.44;
-      lox = (_camFR.p[0] - p0x) * kL; loy = clamp((_camFR.p[1] - p0y) * 0.35, -0.45, 0.45); loz = (_camFR.p[2] - p0z) * kL;
-      const ll = Math.hypot(lox, loz), maxL = isF ? 2.0 : 1.7;
-      if (ll > maxL) { lox *= maxL / ll; loz *= maxL / ll; }
-      if (b.mode === 'fall' || b.mode === 'crack') { lox *= 0.25; loz *= 0.25; loy = 0; }
     }
-    // 盤中心からの正規化位置（縁の外側方向）と進行後方ベクトルを合成
-    const qx = bx + lox * 0.35, qz = bz + loz * 0.35;
-    const ux = qx / (BOARD.w * 0.5), uz = qz / (BOARD.d * 0.5);
-    const r = Math.hypot(ux, uz);
-    const tR = clamp((r - 0.12) / 0.58, 0, 1);
-    const wR = tR * tR * (3 - 2 * tR);
-    const ox = r > 1e-4 ? ux / r : 0, oz = r > 1e-4 ? uz / r : 1;
-    const curX = Math.sin(this.autoYaw), curZ = Math.cos(this.autoYaw);
-    let oSafeX = ox, oSafeZ = oz;
-    // 盤の中央から外周に向かって進むとき、カメラが正面（向かい風）へ回り込んで反転しないよう横の縁側へ逃がす
-    const dotOF = ox * fx + oz * fz;
-    if (dotOF > 0) {
-      oSafeX = ox - dotOF * fx; oSafeZ = oz - dotOF * fz;
-      const sl = Math.hypot(oSafeX, oSafeZ);
-      const px = -fz, pz = fx;   // 進行方向に対する左直交（横の縁）
-      const side = (useInertia ? (curX * px + curZ * pz) : (ox * px + oz * pz)) >= 0 ? 1 : -1;
-      if (sl < 0.35) {
-        const mix = clamp((0.35 - sl) / 0.35, 0, 1);
-        oSafeX = lerp(oSafeX, side * px * 0.75, mix);
-        oSafeZ = lerp(oSafeZ, side * pz * 0.75, mix);
+    for (const w of C.bowls || []) {
+      if (w.sLand >= s0 - 1.0 && w.sIn <= s1 + 1.0) {
+        const bf = S.footprints.find(f => f.kind === 'bowl' && Math.hypot(f.x - w.x, f.z - w.z) < 0.2);
+        const r = bf ? bf.r : 1.35, top = bf ? bf.top : 3.2, btm = bf && bf.bottom != null ? bf.bottom : 1.2;
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+          pts.push([w.x + sx * r, btm, w.z + sz * r], [w.x + sx * r, top, w.z + sz * r]);
+        }
       }
-      // 強い向かい風ほど外側重みを抑えて斜め後ろを維持
-      const damp = 1 - 0.45 * dotOF;
-      oSafeX *= damp; oSafeZ *= damp;
     }
-    const behX = -fx, behZ = -fz;
-    const wOut = (isF ? 0.92 : 1.08) * wR;
-    const wBeh = isF ? 0.96 : 0.74;
-    const wInert = useInertia ? (isF ? 0.14 : 0.22) : 0;
-    const vx = wOut * oSafeX + wBeh * behX + wInert * curX;
-    const vz = wOut * oSafeZ + wBeh * behZ + wInert * curZ;
-    const vl = Math.hypot(vx, vz);
-    const wantYaw = freezeYaw ? this.autoYaw : (vl > 0.05 ? Math.atan2(vx, vz) : this.autoYaw);
-    // 高さに応じた穏やかな俯角（高い場所＝螺旋上段などでは少し浅め、低い盤面では少し見下ろし）
-    const baseP = this.portrait() ? (isF ? 0.60 : 0.66) : (isF ? 0.47 : 0.52);
-    const hNorm = clamp((by - 1.2) / Math.max(2.5, this.topH() - 1.2), -0.35, 1);
-    const wantPitch = clamp(baseP - 0.08 * hNorm, 0.34, 0.78);
-    return { wantYaw, wantPitch, lox, loy, loz, bx, by, bz };
+    if (z.to >= 0.98 && S.basket) {
+      const K = S.basket;
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        pts.push([K.x + sx * 0.7, K.y - 0.15, K.z + sz * 0.7], [K.x + sx * 0.7, K.y + 0.75, K.z + sz * 0.7]);
+      }
+    }
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    for (const q of pts) {
+      if (q[0] < minX) minX = q[0]; if (q[0] > maxX) maxX = q[0];
+      if (q[1] < minY) minY = q[1]; if (q[1] > maxY) maxY = q[1];
+      if (q[2] < minZ) minZ = q[2]; if (q[2] > maxZ) maxZ = q[2];
+    }
+    const ctr = new THREE.Vector3((minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
+    const dir = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+    const cam = new THREE.PerspectiveCamera(camera.fov, aspect, 0.1, 300);
+    const mx = isPort ? 0.84 : 0.80, my = isPort ? 0.60 : 0.72, yBias = isPort ? 0.04 : 0.0;
+    const p = new THREE.Vector3();
+    const fitPts = (ctrV) => {
+      let lo = 4, hi = 95;
+      for (let it = 0; it < 26; it++) {
+        const mid = (lo + hi) / 2;
+        cam.position.copy(ctrV).addScaledVector(dir, mid); cam.lookAt(ctrV); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+        let ok = true;
+        for (const q of pts) {
+          p.set(q[0], q[1], q[2]).project(cam);
+          if (Math.abs(p.x) > mx || Math.abs(p.y - yBias) > my) { ok = false; break; }
+        }
+        if (ok) hi = mid; else lo = mid;
+      }
+      return hi;
+    };
+    let d = fitPts(ctr);
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    for (let pass = 0; pass < 2; pass++) {
+      cam.position.copy(ctr).addScaledVector(dir, d); cam.lookAt(ctr); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+      let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+      for (const q of pts) {
+        p.set(q[0], q[1], q[2]).project(cam);
+        if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x;
+        if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y;
+      }
+      const offX = (x0 + x1) * 0.5, offY = (y0 + y1) * 0.5 - yBias;
+      const halfH = tanH * d, halfW = halfH * aspect;
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion);
+      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+      ctr.addScaledVector(right, offX * halfW).addScaledVector(up, offY * halfH);
+      d = fitPts(ctr);
+    }
+    const fFull = this.fitSmooth(yaw, pitch, aspect, false, _camCtr);
+    const fRef = BOARD.big ? this.fitSmooth(yaw, pitch, aspect, true, _camCtrRef) : fFull;
+    const dMin = fRef.d * (isPort ? 0.56 : 0.52);
+    const dMax = fFull.d * (BOARD.big ? 0.92 : 0.88);
+    d = clamp(d, dMin, dMax);
+    return (this.zoneCache[key] = { ctr, d, yaw, pitch, z });
   },
-  // ムービー：①スタート寄り → ①最初の星寄り → ②右へ流す → ③全体へ引く、を 1 本のなめらかな曲線でつなぐ
-  introShot(dt, yaw, pitch) {
+  // 固定カメラの画角上で、玉と短い先読みが安全枠に収まる最適な光学ズーム倍率を求める
+  computeOpticalZoom(zSpec) {
+    board.updateMatrixWorld();
+    _zoomCam.fov = camera.fov;
+    _zoomCam.aspect = camera.aspect;
+    _zoomCam.zoom = 1;
+    _zoomCam.position.copy(camera.position);
+    _zoomCam.lookAt(this.target);
+    _zoomCam.updateMatrixWorld();
+    _zoomCam.updateProjectionMatrix();
+
+    const b = G.ball, C = S.C;
+    const isPort = this.portrait();
+    const yBias = isPort ? 0.04 : 0.0;
+    let maxNx = 0, maxNy = 0;
+    const addPt = (wx, wy, wz, pad = 0.04) => {
+      _camV1.set(wx, wy, wz);
+      board.localToWorld(_camV1);
+      _camV1.project(_zoomCam);
+      if (_camV1.z > 1) return;
+      maxNx = Math.max(maxNx, Math.abs(_camV1.x) + pad);
+      maxNy = Math.max(maxNy, Math.abs(_camV1.y - yBias) + pad);
+    };
+    addPt(b.p[0], Math.max(-1.0, b.p[1]), b.p[2], 0.06);
+    if (b.mode === 'bowl' && b.bowl && Number.isFinite(b.bowl.x)) {
+      addPt(b.bowl.x, Math.max(-0.5, b.p[1]), b.bowl.z, 0.08);
+    } else if (b.mode === 'lift' && b.lift && Number.isFinite(b.lift.x)) {
+      addPt(b.lift.x, b.p[1], b.lift.z, 0.08);
+    } else if ((b.mode === 'wheel' || b.mode === 'wret') && b.wheel && Number.isFinite(b.wheel.x)) {
+      addPt(b.wheel.x, b.p[1], b.wheel.z, 0.08);
+    } else if (b.mode === 'ground' || G.state === 'ready') {
+      const s0 = G.state === 'ready' ? S.def.startS : clamp(b.s, 0, C.L);
+      const sCap = Math.min(C.L, zSpec.to * C.L + 0.6);
+      for (const ds of [1.2, 2.4]) {
+        const sa = Math.min(sCap, s0 + ds);
+        C.frame(sa, _camFR);
+        addPt(_camFR.p[0], _camFR.p[1] + 0.15, _camFR.p[2], 0.04);
+      }
+    }
+    const isF = this.mode === 'follow';
+    const limX = isPort ? (isF ? 0.80 : 0.76) : (isF ? 0.78 : 0.72);
+    const limY = isPort ? (isF ? 0.58 : 0.54) : (isF ? 0.68 : 0.64);
+    const fitZ = Math.min(limX / Math.max(0.12, maxNx), limY / Math.max(0.12, maxNy));
+    const zMin = isF ? 0.84 : 0.78;
+    const zMax = isF ? (zSpec.prec ? 1.66 : 1.52) : (zSpec.prec ? 1.44 : 1.30);
+    return clamp(isF ? fitZ * 1.08 : fitZ, zMin, zMax);
+  },
+  // ムービー：①スタート寄り → ①最初の星寄り → ②右へ流す → ③区間0（または全体）へ着地
+  introShot(dt, land) {
     board.updateMatrixWorld();
     const W = (x, y, z) => board.localToWorld(new THREE.Vector3(x, y, z));
     const C0 = new THREE.Vector3(0, 1.1, 0.2), sp = cpt(S.C, S.def.startS + 0.3, 0, 0.2), g0 = S.gates[0].star.position;
-    const f = this.fit(yaw, pitch, camera.aspect);
     const keys = [
       { t: 0.0, tg: W(sp[0], sp[1], sp[2]).lerp(W(C0.x, C0.y, C0.z), 0.45), yw: 0.75, pt: 0.40, d: 6.4 },
       { t: 2.3, tg: W(g0.x, g0.y - 0.3, g0.z).lerp(W(C0.x, C0.y, C0.z), 0.40), yw: 0.32, pt: 0.36, d: 6.0 },
       { t: 4.6, tg: W(2.0, 1.1, 0.3), yw: 0.06, pt: 0.38, d: 7.6 },
-      { t: INTRO_DUR, tg: f.ctr.clone(), yw: yaw, pt: pitch, d: f.d },
+      { t: INTRO_DUR, tg: land.ctr.clone(), yw: land.yaw, pt: land.pitch, d: land.d },
     ];
     let t = clamp(G.introT, 0, INTRO_DUR);
     let i = 0; while (i < keys.length - 2 && t > keys[i + 1].t) i++;
     const k0 = keys[Math.max(0, i - 1)], k1 = keys[i], k2 = keys[i + 1], k3 = keys[Math.min(keys.length - 1, i + 2)];
     let u = (t - k1.t) / (k2.t - k1.t);
-    if (i === 0) u = u * u * (3 - 2 * u) * 0.5 + u * 0.5;               // 出だしと着地はゆっくり
+    if (i === 0) u = u * u * (3 - 2 * u) * 0.5 + u * 0.5;
     if (i === keys.length - 2) { u = u * u * (3 - 2 * u); }
     const cr = (a, b, c, d2) => 0.5 * (2 * b + (-a + c) * u + (2 * a - 5 * b + 4 * c - d2) * u * u + (-a + 3 * b - 3 * c + d2) * u * u * u);
     const tg = new THREE.Vector3(cr(k0.tg.x, k1.tg.x, k2.tg.x, k3.tg.x), cr(k0.tg.y, k1.tg.y, k2.tg.y, k3.tg.y), cr(k0.tg.z, k1.tg.z, k2.tg.z, k3.tg.z));
     const yw = cr(k0.yw, k1.yw, k2.yw, k3.yw), pt = cr(k0.pt, k1.pt, k2.pt, k3.pt), d = cr(k0.d, k1.d, k2.d, k3.d);
     camera.position.set(tg.x + Math.sin(yw) * Math.cos(pt) * d, tg.y + Math.sin(pt) * d, tg.z + Math.cos(yw) * Math.cos(pt) * d);
     camera.lookAt(tg); this.yawNow = yw; this.pitchNow = pt; this.dist = d; this.target.copy(tg); this.follow.copy(tg);
-    this.autoYaw = yw; this.autoPitch = pt; this.yawVel = 0;
+    this.camPosSmooth.copy(camera.position);
     return true;
   },
-  toggle() { this.mode = { soft: 'follow', follow: 'board', board: 'soft' }[this.mode] || 'soft'; this.yawOff = this.pitchOff = 0; this.manualHold = 0; UI.syncCam(); return this.mode; },
-  set(m) { if (m === 'toggle') return this.toggle(); if (m === 'board' || m === 'follow' || m === 'soft') { this.mode = m; this.yawOff = this.pitchOff = 0; this.manualHold = 0; UI.syncCam(); } return this.mode; },
+  toggle() {
+    const next = { soft: 'follow', follow: 'board', board: 'soft' }[this.mode] || 'soft';
+    return this.set(next);
+  },
+  set(m) {
+    if (m === 'toggle') return this.toggle();
+    if (m === 'board' || m === 'follow' || m === 'soft') {
+      if (!UI.titleOpen && G.state !== 'intro' && G.state !== 'clear' && this._inited && (this.mode !== m || Math.abs(this.yawOff) > 1e-4 || Math.abs(this.pitchOff) > 1e-4)) {
+        this.beginTransition(this.ZONE_TRANS_DUR);
+      }
+      this.mode = m; this.yawOff = this.pitchOff = 0; UI.syncCam();
+    }
+    return this.mode;
+  },
   titleMix: 1, titleAng: 0,
   update(dt) {
     const dtC = Math.min(0.05, Math.max(0, dt));
-    const stageChanged = S && this._stageId !== S.def.id;
-    if (stageChanged) { this._stageId = S.def.id; this.nearD = 0; this.manualHold = 0; this.yawVel = 0; }
-    const titleWant = UI.titleOpen ? 1 : 0;
-    const wasTitle = this.titleMix > 0.5 && !UI.titleOpen && this._titleExitYaw === null;
-    if (UI.titleOpen) this._titleExitYaw = null;
-    else if (wasTitle) this._titleExitYaw = this.baseYaw() + this.yawOff + this.shortAngle(this.titleAng);
-    if (this.snap || dt === 0) this.titleMix = titleWant;
-    else this.titleMix += (titleWant - this.titleMix) * (1 - Math.exp(-4.5 * dtC));
-    if (UI.titleOpen) this.titleAng = (this.titleAng + dtC * 0.105) % TAU;
+    const stageChanged = S && (this._stageId !== S.def.id || this._stageRev !== this._seenRev);
+    if (stageChanged) {
+      this._stageId = S.def.id; this._seenRev = this._stageRev;
+      this._clearing = false; this._clearT = 0; this.overMix = 0;
+      this.yawOff = 0; this.pitchOff = 0; this.kick = 0;
+      this.inTransition = false; this._transT = 1; this._transDur = 1;
+      this._lastP = -1; this.zoneIdx = 0;
+    }
 
-    // 1. タイトル画面の完全展示回転（現行のまま 100% 維持）
-    if (UI.titleOpen && this.titleMix > 0.999) {
+    // 1. タイトル画面の展示回転（従来どおり維持）
+    if (UI.titleOpen) {
+      if (this.snap || dt === 0) this.titleMix = 1;
+      else this.titleMix += (1 - this.titleMix) * (1 - Math.exp(-4.5 * dtC));
+      this.titleAng = (this.titleAng + dtC * 0.105) % TAU;
       const yawPlay = this.baseYaw() + this.yawOff;
       const yawDiff = this.shortAngle(this.titleAng);
       const yaw = yawPlay + yawDiff * this.titleMix;
@@ -8205,7 +8394,8 @@ const Cam = {
       const f90 = this.fit(this.baseYaw() + Math.PI / 2, pitch, camera.aspect);
       const s2 = Math.sin(this.titleAng + this.yawOff) ** 2;
       const f = { d: lerp(f0.d, f90.d, s2), ctr: _v3.copy(f0.ctr).lerp(f90.ctr, s2) };
-      this.overMix = 0; this.zoomMix = 0; this.autoMix = 0; this.yawVel = 0;
+      this.overMix = 0; this.zoomMix = 0; this.optZoom = 1;
+      this._clearing = false; this.inTransition = false; this._wasTitle = true;
       this.yawNow = yaw; this.pitchNow = pitch;
       this.target.copy(f.ctr);
       this.dist = f.d * (1 - this.kick * 0.02) * dMul;
@@ -8217,164 +8407,168 @@ const Cam = {
       camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * this.dist, this.target.y + Math.sin(pitch) * this.dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * this.dist);
       camera.lookAt(this.target);
       this.camPosSmooth.copy(camera.position);
+      this.applyOpticalZoom(1.0);
       this.snap = false;
       return;
     }
+    this.titleMix = 0;
 
     // 2. イントロムービー
     if (G.state === 'intro') {
-      const g0 = this.computeGoal(false);
-      const introYaw = this.mode === 'board' ? this.baseYaw() + this.yawOff : g0.wantYaw + this.yawOff;
-      const introPitch = clamp((this.mode === 'board' ? this.basePitch() : g0.wantPitch) + this.pitchOff, 0.2, 1.25);
-      if (this.introShot(dtC, introYaw, introPitch)) return;
-    }
-
-    // 3. プレイ中・クリア俯瞰・タイトルからのシームレス移行
-    const playView = !UI.titleOpen && G.state !== 'intro' && G.state !== 'clear';
-    const wantAuto = playView && this.mode !== 'board' ? 1 : 0;
-    const isSnap = this.snap || stageChanged || !this._inited;
-    const goal = this.computeGoal(!isSnap && !wasTitle);
-
-    if (isSnap || wasTitle) {
-      this.autoYaw = goal.wantYaw;
-      this.autoPitch = goal.wantPitch;
-      this.yawVel = 0;
-      this.lookOff.set(goal.lox, goal.loy, goal.loz);
-      if (isSnap) {
-        this.autoMix = wantAuto;
-        this.overMix = G.state === 'clear' ? 1 : 0;
-      }
-      this._inited = true;
-    } else {
-      // 手動ドラッグ後は一定時間ホールドして邪魔をせず、走行中にごくゆっくり復帰
-      if (!this.dragging && this.manualHold > 0) this.manualHold = Math.max(0, this.manualHold - dtC);
-      const manualActive = this.dragging || this.manualHold > 0;
-      if (playView && this.mode !== 'board' && !manualActive) {
-        const bSpd = Math.hypot(G.ball.v[0], G.ball.v[1], G.ball.v[2]);
-        if ((bSpd > 0.30 || G.mode === 'demo') && (Math.abs(this.yawOff) > 1e-4 || Math.abs(this.pitchOff) > 1e-4)) {
-          const rec = Math.exp(-0.30 * dtC);
-          this.yawOff *= rec; this.pitchOff *= rec;
-          if (Math.abs(this.yawOff) < 1e-4) this.yawOff = 0;
-          if (Math.abs(this.pitchOff) < 1e-4) this.pitchOff = 0;
-        }
-        const isF = this.mode === 'follow';
-        const d = this.shortAngle(goal.wantYaw - this.autoYaw);
-        const dead = isF ? 0.035 : 0.055;
-        const eff = Math.abs(d) <= dead ? 0 : Math.sign(d) * (Math.abs(d) - dead);
-        const kp = isF ? 1.45 : 1.15, maxRate = isF ? 1.25 : 1.05, maxAcc = isF ? 2.4 : 1.8;
-        const wantVel = clamp(eff * kp, -maxRate, maxRate);
-        const dv = clamp((wantVel - this.yawVel) * (1 - Math.exp(-3.4 * dtC)), -maxAcc * dtC, maxAcc * dtC);
-        this.yawVel += dv;
-        this.autoYaw += this.yawVel * dtC;
+      this._clearing = false; this.overMix = 0; this.zoomMix = 0; this.optZoom = 1;
+      this.inTransition = false; this._wasTitle = false; this.zoneIdx = 0;
+      this.applyOpticalZoom(1.0);
+      let land;
+      if (this.mode === 'board') {
+        const yw = this.baseYaw() + this.yawOff, pt = clamp(this.basePitch() + this.pitchOff, 0.2, 1.25);
+        const f = this.fit(yw, pt, camera.aspect);
+        land = { ctr: f.ctr, yaw: yw, pitch: pt, d: f.d };
       } else {
-        this.yawVel *= Math.exp(-8 * dtC);
+        const fz = this.fitZone(0, camera.aspect);
+        land = { ctr: fz.ctr, yaw: fz.yaw + this.yawOff, pitch: clamp(fz.pitch + this.pitchOff, 0.2, 1.25), d: fz.d };
       }
-      this.autoPitch += (goal.wantPitch - this.autoPitch) * (1 - Math.exp(-2.2 * dtC));
-      this.lookOff.lerp(_camV0.set(goal.lox, goal.loy, goal.loz), 1 - Math.exp(-3.4 * dtC));
-      this.autoMix += (wantAuto - this.autoMix) * (1 - Math.exp(-4.0 * dtC));
+      if (this.introShot(dtC, land)) return;
     }
 
-    // ゴール後は真上からの俯瞰
-    this.overMix += ((G.state === 'clear' ? 1 : 0) - this.overMix) * (1 - Math.exp(-1.3 * dtC));
-    const wantZoom = !playView ? 0 : this.mode === 'follow' ? 1 : this.mode === 'soft' ? (BOARD.big ? this.BIG_SOFT : this.SOFT) : 0;
-    if (isSnap) this.zoomMix = wantZoom;
-    else this.zoomMix += (wantZoom - this.zoomMix) * (1 - Math.exp(-5 * dtC));
-
-    // 盤固定モード（board）の方位と自動追従モードの方位を最短角で連続補間
-    const boardYaw = this.baseYaw() + this.yawOff;
-    const autoYawWithOff = this.autoYaw + this.yawOff;
-    let yaw = boardYaw + this.shortAngle(autoYawWithOff - boardYaw) * this.autoMix;
-    let pitch = clamp(lerp(this.basePitch(), this.autoPitch, this.autoMix) + this.pitchOff, 0.22, 1.25);
-
-    // タイトル→プレイへのシームレス移行（最短角補間）
-    if (this.titleMix > 0.001) {
-      const tYaw = this._titleExitYaw !== null ? this._titleExitYaw : (boardYaw + this.shortAngle(this.titleAng));
-      yaw = yaw + this.shortAngle(tYaw - yaw) * this.titleMix;
-      pitch = clamp(pitch - (this.portrait() ? 0.08 : 0.05) * this.titleMix, 0.2, 1.25);
-    }
-    // クリア後俯瞰（最短角補間なので何周回った後でも急回転しない）
-    if (this.overMix > 0.001) {
+    // 3. クリア後俯瞰（現在姿勢から単一 5次スムーズステップで真上へ移行し、段差・急旋回・振動をゼロに）
+    if (G.state === 'clear') {
       const overYaw = this.portrait() ? Math.PI / 2 : 0;
-      yaw = yaw + this.shortAngle(overYaw - yaw) * this.overMix;
-      pitch = lerp(pitch, 1.5, this.overMix);
+      const overPitch = 1.5;
+      const fOver = this.fit(overYaw, overPitch, camera.aspect, false);
+      if (!this._clearing) {
+        this._clearing = true;
+        this._clearT = (this.snap || !this._inited) ? this.CLEAR_DUR : 0;
+        this.inTransition = false;
+        this._clearFrom.tgt.copy(this.target);
+        this._clearFrom.yaw = this.yawNow;
+        this._clearFrom.pitch = this.pitchNow;
+        this._clearFrom.dist = this.dist;
+        this._clearFrom.zoom = camera.zoom;
+        this._clearFrom.zoomMix = this.zoomMix;
+        this._clearFrom.yawOff = this.yawOff;
+        this._clearFrom.pitchOff = this.pitchOff;
+      } else {
+        this._clearT = Math.min(this.CLEAR_DUR, this._clearT + dtC);
+      }
+      const s = this.smootherstep(this._clearT / this.CLEAR_DUR);
+      const dy = this.yawOff - this._clearFrom.yawOff;
+      const dp = this.pitchOff - this._clearFrom.pitchOff;
+      const yaw = this._clearFrom.yaw + this.shortAngle(overYaw - this._clearFrom.yaw) * s + dy;
+      const pitch = clamp(lerp(this._clearFrom.pitch, overPitch, s) + dp, 0.22, 1.52);
+      const dist = lerp(this._clearFrom.dist, fOver.d, s);
+      this.target.copy(this._clearFrom.tgt).lerp(fOver.ctr, s);
+      this.optZoom = lerp(this._clearFrom.zoom, 1.0, s);
+      this.overMix = s;
+      this.zoomMix = lerp(this._clearFrom.zoomMix, 0, s);
+      this.kick *= Math.exp(-6 * dtC);
+      camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * dist, this.target.y + Math.sin(pitch) * dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * dist);
+      camera.lookAt(this.target);
+      this.camPosSmooth.copy(camera.position);
+      this.yawNow = yaw; this.pitchNow = pitch; this.dist = dist;
+      this.applyOpticalZoom(this.optZoom);
+      this.snap = false; this._inited = true; this._wasTitle = false;
+      return;
     }
 
-    const dMul = 1 + (this.portrait() ? 0.16 : 0.19) * this.titleMix;
-    const f = this.fitFast(yaw, pitch, camera.aspect, false);
-    const fRef = BOARD.big ? this.fitFast(yaw, pitch, camera.aspect, true) : f;
-
-    // 玉の追従位置（盤傾きの細かな上下ノイズを抑え、酔いにくさを高める）
-    board.updateMatrixWorld();
-    const bp = _camV1.set(goal.bx, goal.by, goal.bz);
-    // ローカル座標ベースで安定させつつ、盤の見た目の傾きは控えめ(0.35)に反映
-    const bpW = _camV2.copy(bp); board.localToWorld(bpW);
-    bp.lerp(bpW, 0.35);
-    if (isSnap) this.follow.copy(bp);
-    else this.follow.lerp(bp, 1 - Math.exp(-5.5 * dtC));
-
-    // 注視点：全体俯瞰（f.ctr）と「玉＋先読み（盤中心寄りブレンド）」を滑らかに補間
-    const isF = this.mode === 'follow';
-    const followCenterW = isF ? 0.88 : (BOARD.big ? 0.80 : 0.68);
-    const goalLookX = lerp(f.ctr.x, this.follow.x + this.lookOff.x, followCenterW);
-    const goalLookZ = lerp(f.ctr.z, this.follow.z + this.lookOff.z, followCenterW);
-    const goalLookY = lerp(f.ctr.y, lerp(Math.min(1.4, this.topH() * 0.35), this.follow.y, 0.80) + this.lookOff.y, isF ? 0.88 : 0.78);
-    const playTarget = _camV0.set(goalLookX, goalLookY, goalLookZ);
-    this.target.copy(f.ctr).lerp(playTarget, this.autoMix * (1 - this.overMix) * (1 - this.titleMix));
-
-    // 距離と「ステージの縁の上空を滑る」水平軌道
-    const nearK = isF ? 0.50 : 0.68;
-    const nearTarget = fRef.d * nearK;
-    this.nearD = (isSnap || !this.nearD) ? nearTarget : this.nearD + (nearTarget - this.nearD) * (1 - Math.exp(-4.5 * dtC));
-    const boardDist = f.d * (1 - this.kick * 0.02) * dMul;
-    const autoDist = this.nearD * (1 - this.kick * 0.02) * dMul;
-    const effAuto = this.autoMix * (1 - this.overMix) * (1 - this.titleMix);
-    const dUse = lerp(boardDist, autoDist, effAuto);
-    this.kick *= Math.exp(-6 * dtC);
-
-    if (this.titleMix > 0.001) {
-      const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * dUse;
-      const shiftDown = (this.portrait() ? 0.27 : 0.34) * halfH * this.titleMix;
-      const ux = -Math.sin(yaw) * Math.sin(pitch), uy = Math.cos(pitch), uz = -Math.cos(yaw) * Math.sin(pitch);
-      this.target.x -= ux * shiftDown; this.target.y -= uy * shiftDown; this.target.z -= uz * shiftDown;
+    // 4. プレイ中：区間固定カメラ＋光学ズーム
+    if (this._clearing) {
+      this._clearing = false; this._clearT = 0; this.overMix = 0;
+      if (!stageChanged && !this.snap && dtC > 0) {
+        this.beginTransition(0.65); this.yawOff = 0; this.pitchOff = 0;
+      }
     }
+    const zones = this.getZones(S.def.id);
+    this.zoneCount = zones.length;
+    const b = G.ball, C = S.C;
+    const p = G.state === 'ready' ? clamp(S.def.startS / C.L, 0, 1) : clamp(b.s / C.L, 0, 1);
+    const isSnap = this.snap || stageChanged || !this._inited;
 
-    // 縁滑走オービット位置：盤中心と注視点の中間を基準に、ステージの縁の外周上空を滑らかに周回
-    const dirX = Math.sin(yaw), dirZ = Math.cos(yaw);
-    const hDes = dUse * Math.cos(pitch);
-    const anchorK = lerp(1.0, isF ? 0.66 : 0.44, effAuto);
-    let cx = this.target.x * anchorK + dirX * hDes;
-    let cz = this.target.z * anchorK + dirZ * hDes;
-    // 注視点（玉）からの水平距離が極端に縮んだり伸びすぎたりしないようソフトに制限
-    if (effAuto > 0.001) {
-      const rx = cx - this.target.x, rz = cz - this.target.z, rh = Math.hypot(rx, rz) || 1;
-      const minH = hDes * 0.80, maxH = hDes * 1.18;
-      if (rh < minH) { cx = this.target.x + rx * (minH / rh); cz = this.target.z + rz * (minH / rh); }
-      else if (rh > maxH) { cx = this.target.x + rx * (maxH / rh); cz = this.target.z + rz * (maxH / rh); }
-      // 盤の縁の内側へ潜り込まない外周ガード
-      const ex = BOARD.w * 0.5 + 0.6, ez = BOARD.d * 0.5 + 0.6;
-      const er = Math.hypot(cx / ex, cz / ez);
-      if (er < 1.0 && er > 1e-4) { cx /= er; cz /= er; }
-    }
-    const hNow = Math.hypot(cx - this.target.x, cz - this.target.z);
-    let cy = this.target.y + hNow * Math.tan(pitch);
-    if (effAuto > 0.001) cy = Math.max(cy, lerp(cy, 3.0, effAuto));
-
-    if (isSnap) {
-      this.camPosSmooth.set(cx, cy, cz);
-      this.snap = false;
+    if (isSnap || this._wasTitle) {
+      const zi = this.findZone(zones, p);
+      if (this._wasTitle && !isSnap && dtC > 0) {
+        this.beginTransition(0.75);
+        this.zoneIdx = zi;
+      } else {
+        this.zoneIdx = zi;
+        this.inTransition = false; this._transT = this._transDur;
+      }
+      this._wasTitle = false; this._inited = true;
     } else {
-      // 位置も軽い2次平滑を通して段差ゼロに
-      this.camPosSmooth.lerp(_camV1.set(cx, cy, cz), 1 - Math.exp(-8.5 * dtC));
+      const locked = (b.mode === 'fall' || b.mode === 'crack' || b.mode === 'basket' || b.mode === 'air');
+      if (this._lastP >= 0 && Math.abs(p - this._lastP) > 0.12) {
+        const nzi = this.findZone(zones, p);
+        if (nzi !== this.zoneIdx) {
+          if (this.mode !== 'board') { this.beginTransition(this.ZONE_TRANS_DUR); this.yawOff = 0; this.pitchOff = 0; }
+          this.zoneIdx = nzi;
+        }
+      } else if (!locked) {
+        let nzi = this.zoneIdx;
+        while (nzi < zones.length - 1 && p >= zones[nzi].to) nzi++;
+        while (nzi > 0 && p < zones[nzi].from - this.ZONE_HYST) nzi--;
+        if (nzi !== this.zoneIdx) {
+          if (this.mode !== 'board') { this.beginTransition(this.ZONE_TRANS_DUR); this.yawOff = 0; this.pitchOff = 0; }
+          this.zoneIdx = nzi;
+        }
+      }
     }
-    camera.position.copy(this.camPosSmooth);
-    camera.lookAt(this.target);
+    this._lastP = p;
 
-    // 実際のカメラ視線方位を yawNow / pitchNow に厳密一致させる（ジャイロ・スティック操作方向と画面を完全一致）
-    const dx = camera.position.x - this.target.x, dy = camera.position.y - this.target.y, dz = camera.position.z - this.target.z;
-    const hd = Math.hypot(dx, dz) || 1;
-    this.yawNow = Math.atan2(dx, dz);
-    this.pitchNow = Math.atan2(dy, hd);
-    this.dist = Math.hypot(hd, dy);
+    let goalTgt, goalYaw, goalPitch, goalDist;
+    if (this.mode === 'board') {
+      const fB = this.fit(this.baseYaw(), this.basePitch(), camera.aspect, false);
+      goalTgt = fB.ctr; goalYaw = this.baseYaw(); goalPitch = this.basePitch(); goalDist = fB.d;
+    } else {
+      const fz = this.fitZone(this.zoneIdx, camera.aspect);
+      goalTgt = fz.ctr; goalYaw = fz.yaw; goalPitch = fz.pitch; goalDist = fz.d;
+    }
+
+    let baseYawNow = goalYaw, basePitchNow = goalPitch, baseDistNow = goalDist;
+    if (this.inTransition) {
+      this._transT = Math.min(this._transDur, this._transT + dtC);
+      const u = this._transDur > 0 ? this._transT / this._transDur : 1;
+      const s = this.smootherstep(u);
+      this.target.copy(this._transFrom.tgt).lerp(goalTgt, s);
+      baseYawNow = this._transFrom.yaw + this.shortAngle(goalYaw - this._transFrom.yaw) * s;
+      basePitchNow = lerp(this._transFrom.pitch, goalPitch, s);
+      baseDistNow = lerp(this._transFrom.dist, goalDist, s);
+      if (u >= 1) this.inTransition = false;
+    } else {
+      // 区間内：位置・角度・注視点を一切動かさず完全固定
+      this.target.copy(goalTgt);
+    }
+
+    const yaw = baseYawNow + this.yawOff;
+    const pitch = clamp(basePitchNow + this.pitchOff, 0.22, 1.35);
+    const dist = baseDistNow;
+    camera.position.set(this.target.x + Math.sin(yaw) * Math.cos(pitch) * dist, this.target.y + Math.sin(pitch) * dist, this.target.z + Math.cos(yaw) * Math.cos(pitch) * dist);
+    camera.lookAt(this.target);
+    this.camPosSmooth.copy(camera.position);
+    this.yawNow = yaw; this.pitchNow = pitch; this.dist = dist;
+
+    // 玉の見え方はカメラの拡大縮小（光学ズーム）のみで穏やかに調整
+    const zSpec = zones[this.zoneIdx] || zones[0];
+    const wantZ = this.mode === 'board' ? 1.0 : this.computeOpticalZoom(zSpec);
+    if (isSnap) {
+      this.optZoom = wantZ;
+    } else {
+      const diff = wantZ - this.optZoom;
+      if (this.mode === 'board') {
+        this.optZoom += diff * (1 - Math.exp(-5.0 * dtC));
+      } else if (diff < -0.012) {
+        this.optZoom += diff * (1 - Math.exp(-3.8 * dtC));   // 引きは素直に応答して見切れを防ぐ
+      } else if (diff > 0.032) {
+        this.optZoom += diff * (1 - Math.exp(-1.8 * dtC));   // 寄りはゆったり穏やかに
+      }
+    }
+    const zoomFinal = this.optZoom * (1 + this.kick * 0.018);
+    this.kick *= Math.exp(-6 * dtC);
+    this.applyOpticalZoom(zoomFinal);
+
+    const wantZM = this.mode === 'board' ? 0 : (this.mode === 'follow' ? clamp((this.optZoom - 0.80) / 0.70, 0.50, 1.0) : clamp((this.optZoom - 0.80) / 0.70, 0.25, 0.72));
+    if (isSnap) this.zoomMix = wantZM;
+    else this.zoomMix += (wantZM - this.zoomMix) * (1 - Math.exp(-4.5 * dtC));
+    this.overMix = 0;
+    this.snap = false;
   },
 };
 // ドラッグで視点、短いタップで（落下後）やり直し
@@ -8384,20 +8578,23 @@ const Cam = {
   canvas.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
     if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 4) { drag.moved = true; Cam.dragging = true; }
-    if (drag.moved) { Cam.manualHold = Cam.MANUAL_HOLD_SEC; }
     Cam.yawOff -= (e.clientX - drag.x) * 0.0055; Cam.pitchOff = clamp(Cam.pitchOff + (e.clientY - drag.y) * 0.004, -0.35, 0.6);
     drag.x = e.clientX; drag.y = e.clientY;
   });
   const end = e => {
     if (!drag || e.pointerId !== drag.id) return;
     const moved = Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0), quick = performance.now() - drag.t < 400;
-    if (drag.moved) Cam.manualHold = Cam.MANUAL_HOLD_SEC;
     Cam.dragging = false;
     drag = null;
     if (moved < 10 && quick) { if (G.state === 'intro') endIntro(); else if (G.state === 'ready' && !UI.titleOpen) tapStart(); else if (G.state === 'failed' || G.state === 'falling') retry(); }
   };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  canvas.addEventListener('dblclick', () => { Cam.yawOff = Cam.pitchOff = 0; Cam.manualHold = 0; });
+  canvas.addEventListener('dblclick', () => {
+    if (!UI.titleOpen && G.state !== 'intro' && G.state !== 'clear' && Cam._inited && (Math.abs(Cam.yawOff) > 1e-4 || Math.abs(Cam.pitchOff) > 1e-4)) {
+      Cam.beginTransition(0.38);
+    }
+    Cam.yawOff = Cam.pitchOff = 0;
+  });
 }
 
 // ---------------------------------------------------------------- 15 UI
@@ -8557,7 +8754,7 @@ const UI = {
   syncMute() { const m = Sound.muted; for (const id of ['bMute', 'bMute2']) { const el = $(id); el.classList.toggle('on', !m); el.querySelector('.w').style.display = m ? 'none' : ''; el.querySelector('.x').style.display = m ? '' : 'none'; el.querySelector('.sw').textContent = m ? 'OFF' : 'ON'; } },
   // タイトルの「ジャイロ」とプレイ中の「ジャイロ」は同じ設定。両方の表示をそろえる
   syncGyro() { const on = Gyro.enabled; for (const id of ['bGyro', 'bGyroIn']) { const el = $(id); el.classList.toggle('on', on); el.querySelector('.sw').textContent = on ? 'ON' : 'OFF'; el.setAttribute('aria-pressed', on ? 'true' : 'false'); } },
-  syncCam() { $('bCam').classList.toggle('on', Cam.mode !== 'board'); $('bCam').title = { soft: '自動追従（C）', follow: '近め追従（C）', board: '全体（C）' }[Cam.mode]; },
+  syncCam() { $('bCam').classList.toggle('on', Cam.mode !== 'board'); $('bCam').title = { soft: '区間固定（C）', follow: '近め固定（C）', board: '全体（C）' }[Cam.mode]; },
   introSeen: {},
   ready(on) { $('readyCue').classList.toggle('show', !!on); },
   setStage(def) {
@@ -8627,7 +8824,7 @@ function setStage(n) {
   // 一番高い物（カメラの収まり用）
   let top = 0; for (let i = 0; i <= st.C.M; i++) top = Math.max(top, st.C.P[i*3+1]);
   top += 0.9; for (const f of st.footprints) top = Math.max(top, f.top);
-  st.topH = top; Cam.fitCache = {};
+  st.topH = top; Cam.fitCache = {}; Cam.zoneCache = {}; Cam._stageRev++;
   UI.setStage(st.def);
   UI.sel = n - 1;
   resetRun();
@@ -8689,7 +8886,7 @@ function visualUpdate(dt) {
     else { const next = G.gateCount === g.idx && G.state === 'playing'; g.glow.k = next ? 0.8 + 0.3 * Math.sin(t * 5) : 0.45; g.glow.size = next ? 0.6 : 0.45; }
   }
   for (const c of S.cps) { if (c.passed) c.glow.k += (0.45 - c.glow.k) * (1 - Math.exp(-3 * dt)); else c.glow.k = 0.08; }
-  S.basketGlow.k = G.gateCount === S.gates.length && G.state !== 'clear' ? 1.3 + 0.5 * Math.sin(t * 4) : (G.state === 'clear' ? Math.max(1.8, S.basketGlow.k * Math.exp(-1.2 * dt)) : 0.3);
+  S.basketGlow.k = G.gateCount === S.gates.length && G.state !== 'clear' ? 1.3 + 0.5 * Math.sin(t * 4) : (G.state === 'clear' ? Math.max(1.65, S.basketGlow.k * Math.exp(-1.2 * dt)) : 0.3);
   if (S.startGlow) S.startGlow.k = 0.8 + 0.2 * Math.sin(t * 2);
   // 置物の動き
   const O = S.dyn.orrery;
@@ -8780,20 +8977,26 @@ function visualUpdate(dt) {
   Cam.update(dt);
   camera.updateMatrixWorld();
   glassSunV.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse); glassU.uSunV.value.copy(glassSunV);
-  // 俯瞰：ガラスを薄くして星座を主役に、星の名前を添える
+  // 俯瞰：ガラスを薄くして星座を主役に、星の名前を添える（環境反射も同時に抑えて俯瞰移動中の白飛びを防ぐ）
   MAT.deckGlass.opacity = lerp(0.42, 0.1, Cam.overMix);
+  MAT.deckGlass.envMapIntensity = lerp(1.15, 0.28, Cam.overMix);
   const nm = $('starNames');
   if (S.con && Cam.overMix > 0.05) {
     nm.style.opacity = clamp((Cam.overMix - 0.55) * 3, 0, 1).toFixed(2);
     S.con.stars.forEach((s2, i) => { _v2.set(s2.x, CFG.DECK_Y, s2.z); board.localToWorld(_v2); _v2.project(camera); const el = nm.children[i]; if (el) { el.style.left = ((_v2.x * 0.5 + 0.5) * 100).toFixed(2) + '%'; el.style.top = ((1 - (_v2.y * 0.5 + 0.5)) * 100).toFixed(2) + '%'; } });
   } else nm.style.opacity = '0';
-  // ピント（A案：WebGL 1パス ミニチュアぼかし。タイトル・ムービー・俯瞰中はぼかし量 0）
+  // ピント（A案：WebGL 1パス ミニチュアぼかし。クリア時は俯瞰進行に合わせて滑らかにフェードアウト）
+  const isClear = G.state === 'clear';
   const wantBlur = Focus.on && (G.state === 'playing' || G.state === 'falling' || G.state === 'failed') && !UI.titleOpen && Cam.overMix < 0.25;
   const wasActive = Focus.active;
-  Focus.active = wantBlur && Focus.rtReady;
-  const targetAmt = wantBlur ? 1 : 0;
+  let targetAmt = wantBlur ? 1 : 0;
+  if (Focus.on && isClear && !UI.titleOpen) {
+    const cf = 1 - clamp(Cam.overMix / 0.55, 0, 1);
+    targetAmt = cf * cf * (3 - 2 * cf);
+  }
+  Focus.active = (targetAmt > 0.002) && Focus.rtReady;
   if (!autoClock || dt === 0) Focus.amt = targetAmt;
-  else Focus.amt += (targetAmt - Focus.amt) * (1 - Math.exp(-9 * dt));
+  else Focus.amt += (targetAmt - Focus.amt) * (1 - Math.exp(-(isClear ? 4.5 : 9) * dt));
   if (Focus.on && Focus.rtReady) {
     _v2.fromArray(b.p); board.localToWorld(_v2); _v2.project(camera);
     const fy = clamp(_v2.y * 0.5 + 0.5, 0.16, 0.84);
@@ -8938,6 +9141,7 @@ function adaptPixelRatio(dt) {
   }
   if (fastT > 5 && pixelRatio < prCap - 0.001) { pixelRatio = Math.min(prCap, +(pixelRatio + 0.1).toFixed(2)); applySize(); fastT = 0; }
 }
+let basePointScale = 1;
 function applySize() {
   const w = innerWidth, h = innerHeight;
   renderer.setPixelRatio(pixelRatio); renderer.setSize(w, h, false);
@@ -8946,8 +9150,9 @@ function applySize() {
   if (focusRT.width !== rw || focusRT.height !== rh) focusRT.setSize(rw, rh);
   focusU.uTexel.value.set(1 / rw, 1 / rh);
   camera.aspect = w / h; camera.updateProjectionMatrix();
-  const sc = renderer.domElement.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
-  glows.pts.material.uniforms.uScale.value = parts.pts.material.uniforms.uScale.value = sc;
+  basePointScale = renderer.domElement.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+  glows.pts.material.uniforms.uScale.value = parts.pts.material.uniforms.uScale.value = basePointScale * camera.zoom;
+  Cam.zoneCache = {};
   UI.syncInput();
 }
 addEventListener('resize', applySize);
